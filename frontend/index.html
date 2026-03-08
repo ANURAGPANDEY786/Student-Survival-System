@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Survival System (SSS)</title>
+
+  <!-- Dark UI kit (create this file if not made yet) -->
+  <link rel="stylesheet" href="../assets/css/ui-kit.css">
+
+  <style>
+    /* If ui-kit.css not created yet, this fallback keeps it black */
+    body{ background:#0b0b0b; color:#fff; font-family:system-ui, Arial; margin:0; }
+    .container{ max-width:1100px; margin:0 auto; padding:16px; }
+    .topbar{ background:#0f0f0f; border-bottom:1px solid #222; }
+    .nav{ display:flex; gap:14px; align-items:center; justify-content:space-between; padding:12px 16px; }
+    .brand{ display:flex; gap:10px; align-items:center; font-weight:800; letter-spacing:.3px; }
+    .search{ flex:1; max-width:520px; display:flex; align-items:center; background:#111; border:1px solid #222; border-radius:12px; overflow:hidden; }
+    .search input{ flex:1; background:transparent; border:none; outline:none; color:#fff; padding:10px 12px; }
+    .search button{ background:#3b82f6; border:none; color:#fff; padding:10px 14px; cursor:pointer; }
+    .right{ display:flex; gap:10px; align-items:center; }
+    .btn{ padding:9px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:700; }
+    .btn.blue{ background:#3b82f6; color:#fff; }
+    .btn.green{ background:#22c55e; color:#000; }
+    .btn.red{ background:#ef4444; color:#fff; }
+    .menu{ background:#0f0f0f; border-bottom:1px solid #222; }
+    .menuRow{ display:flex; gap:18px; padding:10px 16px; overflow:auto; }
+    .menuRow a{ color:#eaeaea; text-decoration:none; font-weight:700; opacity:.9; }
+    .menuRow a:hover{ opacity:1; }
+    .hero{ background:linear-gradient(180deg,#0f0f0f,#0b0b0b); border-bottom:1px solid #222; }
+    .heroGrid{ display:grid; grid-template-columns:1.3fr .7fr; gap:18px; padding:26px 16px; align-items:center; }
+    .heroCard{ background:#111; border:1px solid #222; border-radius:16px; padding:20px; }
+    .heroTitle{ font-size:36px; margin:0; }
+    .heroSub{ color:#b5b5b5; margin-top:8px; line-height:1.5; }
+    .heroActions{ margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; }
+    .featureRow{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; padding:16px; }
+    .feature{ background:#111; border:1px solid #222; border-radius:14px; padding:14px; }
+    .feature b{ display:block; margin-top:6px; }
+    .feature span{ color:#b5b5b5; font-size:13px; }
+    .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:16px; }
+    .mod{ background:#111; border:1px solid #222; border-radius:16px; padding:16px; cursor:pointer; transition:.15s; }
+    .mod:hover{ transform:translateY(-2px); border-color:#333; }
+    .modTop{ display:flex; justify-content:space-between; align-items:center; }
+    .tag{ padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; }
+    .tLive{ background:#22c55e; color:#000; }
+    .tSoon{ background:#334155; color:#fff; opacity:.9; }
+    .mod h3{ margin:10px 0 6px 0; }
+    .muted{ color:#b5b5b5; font-size:13px; line-height:1.5; }
+    .modBtns{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+    .linkBtn{ text-decoration:none; display:inline-block; }
+    .foot{ margin-top:22px; opacity:.75; font-size:13px; text-align:center; padding-bottom:20px; }
+    @media(max-width:900px){ .heroGrid{ grid-template-columns:1fr; } .grid{ grid-template-columns:1fr; } .featureRow{ grid-template-columns:1fr 1fr; } }
+    @media(max-width:520px){ .featureRow{ grid-template-columns:1fr; } }
+  </style>
+
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="nav">
+    <div class="brand">🛟 SSS <span style="opacity:.7;font-weight:700;">Student Survival System</span></div>
+
+    <div class="search">
+      <input id="q" placeholder="Search modules (PG, Food, Medical, Expense)..." />
+      <button onclick="quickSearch()">🔍</button>
+    </div>
+
+    <div class="right">
+  <span id="studentStatus" style="opacity:.85;font-weight:700;"></span>
+
+  <button class="btn blue" id="studentLoginBtn">Student Login</button>
+
+  <button class="btn red" id="studentLogoutBtn" style="display:none;">Logout</button>
+
+  <button class="btn red" onclick="goAdmin()">Admin</button>
+</div>
+  </div>
+</div>
+
+<!-- MENU -->
+<div class="menu">
+  <div class="menuRow">
+    <a href="#" onclick="scrollToMods();return false;">Modules</a>
+    <a href="#" onclick="goStudent('pg.html');return false;">PG/Rooms</a>
+    
+    <a href="#" onclick="goStudent('dashboard.html');return false;">Dashboard</a>
+    <a href="#" onclick="scrollToHow();return false;">How it works</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="heroGrid">
+    <div class="heroCard">
+      <h1 class="heroTitle">One System for Student Life</h1>
+      <div class="heroSub">
+        SSS is a <b>real-time student support platform</b> to help students survive college life:
+        <br>🏠 PG/Rooms • 🍱 Cheap Food • 🏥 Medical Help • 💰 Expense Tracker • 🚨 Complaints
+        <br><br>
+        <b>Not Google-like.</b> Data is submitted by logged-in students with confirmations & moderation.
+      </div>
+
+      <div class="heroActions">
+        <button class="btn green" onclick="goStudent('pg.html')">Explore PG/Rooms</button>
+        <button class="btn blue" onclick="goStudent('dashboard.html')">Open Dashboard</button>
+      </div>
+    </div>
+
+    <div class="heroCard">
+      <b>What makes it unique?</b>
+      <div class="heroSub">
+        ✅ Verified student actions (login)<br>
+        ✅ Confirm system (real-time trust)<br>
+        ✅ Risk badge + Intelligence widgets<br>
+        ✅ Admin moderation (remove fake)<br>
+      </div>
+      <div class="heroActions">
+        <button class="btn blue" onclick="scrollToHow()">See How it works</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature Row -->
+  <div class="featureRow">
+    <div class="feature">⚡ <b>Real-time</b><span>Fresh student reported issues</span></div>
+    <div class="feature">✅ <b>Verified</b><span>Login-based posting & confirming</span></div>
+    <div class="feature">🧠 <b>Smart</b><span>Risk score + trends + insights</span></div>
+    <div class="feature">📍 <b>Nearby</b><span>Distance + map navigation</span></div>
+  </div>
+</div>
+
+<!-- MODULES -->
+<div class="container" id="mods">
+  <h2 style="margin:0 0 10px 0;">Modules</h2>
+  <div class="muted">Click any module → student login → module opens.</div>
+
+  <div class="grid">
+
+    <!-- PG -->
+    <div class="mod" onclick="goStudent('pg.html')">
+      <div class="modTop">
+        <b>🏠 PG / Rooms</b>
+        <span class="tag tLive">LIVE</span>
+      </div>
+      <h3>Find safe & affordable PG near college</h3>
+      <div class="muted">
+        Risk badges, verified reviews, complaint confirms, maps, contact, admin moderation.
+      </div>
+      <div class="modBtns">
+        <a class="linkBtn btn green" href="#" onclick="goStudent('pg.html');event.stopPropagation();return false;">Open</a>
+        <a class="linkBtn btn blue" href="#" onclick="goStudent('dashboard.html');event.stopPropagation();return false;">Insights</a>
+      </div>
+    </div>
+
+
+    <!-- Food -->
+    <div class="mod" onclick="location.href='food.html'">
+      <div class="modTop">
+        <b>🍱 Cheap Food</b>
+        <span class="tag tLive">LIVE</span>
+      </div>
+      <h3>Find budget-friendly food near college</h3>
+      <div class="muted">
+        Canteen menu, nearby vendors, student reviews, “cheap & good” ranking.
+      </div>
+      <div class="modBtns">
+        <a class="linkBtn btn green" href="food.html" onclick="event.stopPropagation();">Open</a>
+      </div>
+    </div>
+
+    <!-- Medical -->
+    <div class="mod" onclick="goStudent('#')">
+      <div class="modTop">
+        <b>🏥 Medical</b>
+        <span class="tag tSoon">NEXT</span>
+      </div>
+      <h3>Emergency help & nearby medical support</h3>
+      <div class="muted">
+        Hospital/pharmacy list, SOS info, student feedback, quick call buttons.
+      </div>
+      <div class="modBtns">
+        <button class="btn blue" onclick="event.stopPropagation();alert('Medical module will be added next');">Coming Soon</button>
+      </div>
+    </div>
+
+    <!-- Expense -->
+    <div class="mod" onclick="goStudent('#')">
+      <div class="modTop">
+        <b>💰 Expense Tracker</b>
+        <span class="tag tSoon">NEXT</span>
+      </div>
+      <h3>Track daily/monthly expenses intelligently</h3>
+      <div class="muted">
+        Budget alerts, category summary, “where money went”, export report.
+      </div>
+      <div class="modBtns">
+        <button class="btn blue" onclick="event.stopPropagation();alert('Expense tracker will be added next');">Coming Soon</button>
+      </div>
+    </div>
+
+    <!-- Admin -->
+    <div class="mod" onclick="goAdmin()">
+      <div class="modTop">
+        <b>🧑‍💼 Admin Panel</b>
+        <span class="tag tLive">LIVE</span>
+      </div>
+      <h3>Manage PGs + moderation</h3>
+      <div class="muted">
+        Add/edit/delete PGs, delete fake reviews, resolve complaints, secure admin login.
+      </div>
+      <div class="modBtns">
+        <a class="linkBtn btn red" href="#" onclick="goAdmin();event.stopPropagation();return false;">Open Admin</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="heroCard" id="how" style="margin-top:18px;">
+  <h2 style="margin:0 0 10px 0;">How It Works</h2>
+  <div class="muted">
+    <b>1)</b> The landing page is publicly accessible and introduces the system modules.<br>
+    <b>2)</b> When a student selects any module, authentication is required (no guest access).<br>
+    <b>3)</b> Students can submit reviews and report issues inside specific modules such as PG, Food, or Medical.<br>
+    <b>4)</b> Other verified students can confirm reported issues to increase reliability.<br>
+    <b>5)</b> The system calculates risk levels and insights based on real-time student activity.<br>
+    <b>6)</b> Admin can moderate content, remove fake reviews, and resolve reported issues.
+  </div>
+</div>
+
+
+  <div class="foot">
+    © Student Survival System (SSS) — Real-time student support platform.
+  </div>
+</div>
+
+<script>
+
+  
+let IS_LOGGED_IN = false;
+
+async function initStudentAuth() {
+  try {
+    const res = await fetch("../backend/auth/me.php", { cache: "no-store" });
+    const me = await res.json();
+
+    IS_LOGGED_IN = !!me.loggedIn;
+
+    const statusEl = document.getElementById("studentStatus");
+    const loginBtn = document.getElementById("studentLoginBtn");
+    const logoutBtn = document.getElementById("studentLogoutBtn");
+
+    if (IS_LOGGED_IN) {
+      if (statusEl) statusEl.textContent = "👤 " + (me.student_name || "Student");
+
+      if (loginBtn) {
+        loginBtn.textContent = "Open Dashboard";
+        loginBtn.onclick = () => window.location.href = "dashboard.html";
+      }
+
+      if (logoutBtn) {
+        logoutBtn.style.display = "inline-block";
+        logoutBtn.onclick = () => {
+          fetch("../backend/auth/logout.php")
+            .then(() => window.location.href = "index.html");
+        };
+      }
+    } else {
+      if (statusEl) statusEl.textContent = "";
+
+      if (loginBtn) {
+        loginBtn.textContent = "Student Login";
+        loginBtn.onclick = () => window.location.href = "login.html?next=index.html";
+      }
+
+      if (logoutBtn) logoutBtn.style.display = "none";
+    }
+  } catch (e) {
+    IS_LOGGED_IN = false;
+  }
+}
+
+
+  function goStudent(page){
+  if(page === "#" || !page){
+    alert("This module will be added next.");
+    return;
+  }
+
+  // ✅ If already logged in → open module directly
+  if(IS_LOGGED_IN){
+    window.location.href = page;
+    return;
+  }
+
+  // ❌ Not logged in → go login first
+  window.location.href = "login.html?next=" + encodeURIComponent(page);
+}
+
+
+function goAdmin(){
+  // admin login page in backend/admin
+  window.location.href = "../backend/admin/login.php";
+}
+
+function scrollToMods(){
+  document.getElementById("mods").scrollIntoView({behavior:"smooth"});
+}
+
+function scrollToHow(){
+  document.getElementById("how").scrollIntoView({behavior:"smooth"});
+}
+
+function quickSearch(){
+  const q = (document.getElementById("q").value || "").toLowerCase();
+  if(q.includes("pg")) return goStudent("pg.html");
+  if(q.includes("dash")) return goStudent("dashboard.html");
+  if(q.includes("food")) return window.location.href="food.html";
+  if(q.includes("medical")) return alert("Medical module will be added next.");
+  if(q.includes("expense")) return alert("Expense module will be added next.");
+  alert("Try: pg, complaints, dashboard, food, medical, expense");
+}
+
+ initStudentAuth();
+</script>
+
+</body>
+</html>

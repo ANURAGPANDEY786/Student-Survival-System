@@ -1,0 +1,49 @@
+body {
+  background: radial-gradient(circle at top, #111, #000);
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+.dashboard-container {
+  max-width: 800px;
+  margin: 40px auto;
+}
+
+.status-card {
+  background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+  padding: 18px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  border-left: 6px solid transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* Hover effect */
+.status-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+}
+
+/* Glow based on type */
+.food {
+  border-left-color: #22c55e;
+}
+.food:hover {
+  box-shadow: 0 0 15px rgba(34,197,94,0.6);
+}
+
+.water {
+  border-left-color: #ef4444;
+}
+.water:hover {
+  box-shadow: 0 0 15px rgba(239,68,68,0.6);
+}
+
+.pg {
+  border-left-color: #3b82f6;
+}
+.pg:hover {
+  box-shadow: 0 0 15px rgba(59,130,246,0.6);
+}

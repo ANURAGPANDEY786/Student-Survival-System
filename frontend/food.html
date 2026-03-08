@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Food Near College</title>
+
+<link rel="stylesheet" href="../assets/css/dashboard.css">
+<style>
+/* Same clean grid style as PG */
+.page-wrap{ max-width:1100px; margin:0 auto; padding:16px; }
+.topRow{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:15px; }
+.searchBox input{
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #222;
+  background:#111;
+  color:#fff;
+}
+.grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+@media(max-width:900px){ .grid{ grid-template-columns:repeat(2,1fr);} }
+@media(max-width:600px){ .grid{ grid-template-columns:1fr;} }
+.card{
+  background:#111;
+  border:1px solid #222;
+  border-radius:16px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:.15s;
+}
+.card:hover{ transform:translateY(-3px); border-color:#333; }
+.card img{ width:100%; height:160px; object-fit:cover; }
+.cardBody{ padding:12px; }
+.titleRow{ display:flex; justify-content:space-between; align-items:center; }
+.badge{ padding:4px 10px; border-radius:999px; font-size:12px; font-weight:bold; }
+.safe{ background:#22c55e; color:#000; }
+.warn{ background:#facc15; color:#000; }
+.high{ background:#ef4444; color:#fff; }
+.meta{ margin-top:6px; font-size:13px; color:#ccc; }
+.rating{ margin-top:6px; font-size:13px; }
+.btnPrimary{
+  display:block;
+  margin-top:10px;
+  text-align:center;
+  padding:10px;
+  border-radius:12px;
+  background:#3b82f6;
+  color:#fff;
+  text-decoration:none;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+<div class="page-wrap">
+
+<h2>🍱 Food Near College</h2>
+
+<div class="topRow">
+  <div class="searchBox">
+    <input id="search" placeholder="Search food vendor...">
+  </div>
+
+  <div>
+    <select id="sort">
+      <option value="nearest">Nearest</option>
+      <option value="cheapest">Cheapest</option>
+      <option value="top">Top Rated</option>
+    </select>
+  </div>
+</div>
+
+<div class="grid" id="foodGrid"></div>
+
+</div>
+
+<script>
+let allFoods = [];
+
+async function loadFoods(){
+  const sort = document.getElementById("sort").value;
+  const res = await fetch("../backend/api/food-list.php?sort="+sort);
+  allFoods = await res.json();
+  renderFoods();
+}
+
+function renderFoods(){
+  const grid = document.getElementById("foodGrid");
+  const search = document.getElementById("search").value.toLowerCase();
+
+  const filtered = allFoods.filter(f =>
+    f.name.toLowerCase().includes(search)
+  );
+
+  grid.innerHTML = filtered.map(f => `
+    <div class="card" onclick="openDetail(${f.id})">
+      <img src="../uploads/food/${f.photo ?? 'default.jpg'}">
+      <div class="cardBody">
+        <div class="titleRow">
+          <div><b>${f.name}</b></div>
+          <div class="badge ${riskClass(f.risk)}">${f.risk}</div>
+        </div>
+
+        <div class="meta">₹${f.price} | ${f.distance} km | ${f.type}</div>
+        <div class="rating">⭐ ${Number(f.avg_rating).toFixed(1)} (${f.total_reviews} reviews)</div>
+
+        <a class="btnPrimary" href="food-detail.html?id=${f.id}" onclick="event.stopPropagation()">View Details</a>
+      </div>
+    </div>
+  `).join("");
+}
+
+function riskClass(r){
+  if(r==="High Risk") return "high";
+  if(r==="Warning") return "warn";
+  return "safe";
+}
+
+function openDetail(id){
+  window.location.href="food-detail.html?id="+id;
+}
+
+document.getElementById("search").addEventListener("input", renderFoods);
+document.getElementById("sort").addEventListener("change", loadFoods);
+
+loadFoods();
+</script>
+
+</body>
+</html>

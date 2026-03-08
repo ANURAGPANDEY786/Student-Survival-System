@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PG Details</title>
+
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
+
+  <style>
+    .pill { padding:4px 10px; border-radius:999px; font-weight:bold; font-size:12px; }
+    .pending { background:#334155; color:#fff; }
+    .warning { background:#facc15; color:#000; }
+    .critical { background:#ef4444; color:#fff; }
+
+    .riskSafe { background:#22c55e; color:#000; }
+    .riskWarn { background:#facc15; color:#000; }
+    .riskHigh { background:#ef4444; color:#fff; }
+
+    .sectionBtn{
+      width:100%;
+      text-align:left;
+      padding:12px;
+      margin-top:12px;
+      border-radius:10px;
+      background:#111;
+      color:#fff;
+      border:1px solid #222;
+      cursor:pointer;
+      font-weight:bold;
+    }
+    .sectionBox{
+      margin-top:10px;
+      padding:12px;
+      border-radius:12px;
+      background:#1a1a1a;
+      border:1px solid #222;
+    }
+  </style>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+</head>
+
+<body>
+
+
+<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px;">
+  <div id="who" style="opacity:0.9;">👤 ...</div>
+  <button onclick="logout()"
+    style="padding:8px 12px; border-radius:8px; background:#ef4444; color:white; border:none; cursor:pointer;">
+    Logout
+  </button>
+</div>
+
+
+<div id="detail-root"></div>
+
+<script>
+
+  async function requireLogin() {
+  const res = await fetch("../backend/auth/me.php");
+  const me = await res.json();
+
+  if (!me.loggedIn) {
+    const cur = "pg-detail.html" + window.location.search;
+    window.location.href = "login.html?next=" + encodeURIComponent(cur);
+    return null;
+  }
+  return me;
+}
+
+
+  fetch("../backend/auth/me.php").then(r=>r.json()).then(me=>{
+  if(!me.loggedIn){
+    const cur = "pg-detail.html" + window.location.search;
+    window.location.href = "login.html?next=" + encodeURIComponent(cur);
+  }
+});
+
+const { useState, useEffect } = React;
+const params = new URLSearchParams(window.location.search);
+const pgId = params.get("id");
+
+function CollapsibleSection({ title, children, defaultOpen=false }) {
+  const [open, setOpen] = React.useState(defaultOpen);
+
+  return React.createElement(
+    "div",
+    null,
+    React.createElement(
+      "button",
+      { className:"sectionBtn", onClick:()=>setOpen(!open) },
+      (open ? "▼ " : "► ") + title
+    ),
+    open ? React.createElement("div", { className:"sectionBox" }, children) : null
+  );
+}
+
+function ReviewSection({ pgId }) {
+  const [meta, setMeta] = React.useState(null);
+  const [name, setName] = React.useState("");
+  const [rating, setRating] = React.useState(5);
+  const [text, setText] = React.useState("");
+  const [issues, setIssues] = React.useState([]);
+
+  function toggleIssue(v) {
+    setIssues(prev => prev.includes(v) ? prev.filter(x=>x!==v) : [...prev, v]);
+  }
+
+  function load() {
+    fetch("../backend/api/pg-review-list.php?pg_id=" + pgId)
+      .then(r=>r.json())
+      .then(setMeta);
+  }
+
+  React.useEffect(load, []);
+
+  function submit(e) {
+    e.preventDefault();
+    const fd = new FormData();
+    fd.append("pg_id", pgId);
+    fd.append("student_name", name);
+    fd.append("rating", rating);
+    fd.append("review_text", text);
+    issues.forEach(i => fd.append("issues[]", i));
+
+    fetch("../backend/api/pg-review-add.php", { method:"POST", body: fd })
+      .then(r=>r.json())
+      .then(res => {
+        if (res.ok) {
+          setName(""); setText(""); setIssues([]); setRating(5);
+          load();
+        } else {
+          alert("Failed to submit review");
+        }
+      });
+  }
+
+  if (!meta) return React.createElement("p", null, "Loading reviews...");
+
+  return React.createElement(
+    "div",
+    null,
+
+    React.createElement("p", null, "Average: " + meta.avg_rating + " / 5  (" + meta.total_reviews + " reviews)"),
+    React.createElement("p", null, "Top Problems: ",
+      meta.top_issues.length ? meta.top_issues.map(x => x.issue + " (" + x.c + ")").join(", ") : "None"
+    ),
+
+    React.createElement("hr", { style:{ borderColor:"#333" } }),
+
+    React.createElement("h4", null, "Add Review"),
+    React.createElement("form", { onSubmit: submit },
+
+      React.createElement("input", {
+        placeholder:"Your Name",
+        value:name,
+        onChange:e=>setName(e.target.value),
+        required:true,
+        style:{ width:"100%", padding:"10px", marginBottom:"10px", borderRadius:"8px" }
+      }),
+
+      React.createElement("select", {
+        value:rating,
+        onChange:e=>setRating(e.target.value),
+        style:{ width:"100%", padding:"10px", marginBottom:"10px", borderRadius:"8px" }
+      },
+        [5,4,3,2,1].map(n => React.createElement("option", { key:n, value:n }, n))
+      ),
+
+      React.createElement("textarea", {
+        placeholder:"Short review (optional)",
+        value:text,
+        onChange:e=>setText(e.target.value),
+        style:{ width:"100%", padding:"10px", marginBottom:"10px", borderRadius:"8px" }
+      }),
+
+      React.createElement("div", null,
+        ["water","power","food","safety","noise"].map(tag =>
+          React.createElement("label", { key:tag, style:{ marginRight:"10px" } },
+            React.createElement("input", {
+              type:"checkbox",
+              checked: issues.includes(tag),
+              onChange: ()=>toggleIssue(tag)
+            }),
+            " " + tag
+          )
+        )
+      ),
+
+      React.createElement("button", {
+        type:"submit",
+        style:{
+          marginTop:"10px",
+          padding:"10px",
+          borderRadius:"8px",
+          background:"#22c55e",
+          border:"none",
+          cursor:"pointer",
+          fontWeight:"bold"
+        }
+      }, "Submit Review")
+    ),
+
+    React.createElement("hr", { style:{ borderColor:"#333", marginTop:"15px" } }),
+
+    React.createElement("h4", null, "Recent Reviews"),
+    meta.reviews.length
+      ? meta.reviews.map(r =>
+          React.createElement("div", { key:r.id, style:{ marginBottom:"10px", padding:"10px", background:"#111", borderRadius:"10px" } },
+            React.createElement("b", null, r.student_name + " ⭐" + r.rating),
+            React.createElement("div", null, r.review_text || "(no text)")
+          )
+        )
+      : React.createElement("p", null, "No reviews yet.")
+  );
+}
+
+function PGComplaints({ pgId }) {
+  const [list, setList] = React.useState([]);
+  const [student, setStudent] = React.useState("");
+  const [issue, setIssue] = React.useState("water");
+  const [message, setMessage] = React.useState("");
+
+  function load() {
+    fetch("../backend/api/pg-complaint-list.php?pg_id=" + pgId)
+      .then(r => r.json())
+      .then(setList);
+  }
+  React.useEffect(load, []);
+
+  function sevClass(s){
+    if(s==="Critical") return "pill critical";
+    if(s==="Warning") return "pill warning";
+    return "pill pending";
+  }
+
+  function submit(e){
+    e.preventDefault();
+    const fd = new FormData();
+    fd.append("pg_id", pgId);
+    fd.append("student_name", student);
+    fd.append("issue", issue);
+    fd.append("message", message);
+
+    fetch("../backend/api/pg-complaint-add.php", { method:"POST", body: fd })
+      .then(r=>r.json())
+      .then(res=>{
+        if(res.ok){
+          setMessage("");
+          load();
+        } else alert("Failed to submit complaint");
+      });
+  }
+
+  function confirm(id){
+    if(!student){ alert("Enter your name first"); return; }
+    const fd = new FormData();
+    fd.append("complaint_id", id);
+    fd.append("student_name", student);
+
+    fetch("../backend/api/pg-complaint-confirm.php", { method:"POST", body: fd })
+      .then(r=>r.json())
+      .then(res=>{
+        if(res.ok) load();
+        else alert(res.msg || "Already confirmed");
+      });
+  }
+
+  return React.createElement(
+    "div",
+    null,
+
+    React.createElement("h4", null, "Add PG Complaint"),
+    React.createElement("form", { onSubmit: submit },
+
+      React.createElement("input", {
+        placeholder:"Your Name (same name used for confirm)",
+        value: student,
+        onChange: e=>setStudent(e.target.value),
+        required:true,
+        style:{ width:"100%", padding:"10px", borderRadius:"8px", marginBottom:"10px" }
+      }),
+
+      React.createElement("select", {
+        value: issue,
+        onChange: e=>setIssue(e.target.value),
+        style:{ width:"100%", padding:"10px", borderRadius:"8px", marginBottom:"10px" }
+      },
+        ["water","power","food","hygiene","security","noise"].map(x =>
+          React.createElement("option", { key:x, value:x }, x)
+        )
+      ),
+
+      React.createElement("textarea", {
+        placeholder:"Describe the PG issue",
+        value: message,
+        onChange: e=>setMessage(e.target.value),
+        required:true,
+        style:{ width:"100%", padding:"10px", borderRadius:"8px" }
+      }),
+
+      React.createElement("button", {
+        type:"submit",
+        style:{
+          marginTop:"10px",
+          padding:"10px",
+          borderRadius:"8px",
+          background:"#22c55e",
+          border:"none",
+          cursor:"pointer",
+          fontWeight:"bold"
+        }
+      }, "Submit PG Complaint")
+    ),
+
+    React.createElement("hr", { style:{ borderColor:"#333", marginTop:"15px" } }),
+
+    React.createElement("h4", null, "Live Complaints"),
+    list.length
+      ? list.map(item =>
+          React.createElement(
+            "div",
+            { key:item.id, style:{ marginBottom:"12px", padding:"10px", borderRadius:"10px", background:"#111" } },
+
+            React.createElement("div", null,
+              React.createElement("b", null, item.issue.toUpperCase()),
+              " ",
+              React.createElement("span", { className: sevClass(item.severity) }, item.severity)
+            ),
+
+            React.createElement("div", null, item.message || "(no details)"),
+            React.createElement("div", { style:{ marginTop:"6px", opacity:0.9 } },
+              "By: " + item.student_name + " | Confirms: " + item.confirms
+            ),
+
+            React.createElement("button", {
+              onClick: ()=>confirm(item.id),
+              style:{ marginTop:"8px", padding:"8px 12px", borderRadius:"8px", cursor:"pointer" }
+            }, "✅ Confirm")
+          )
+        )
+      : React.createElement("p", null, "No PG complaints yet.")
+  );
+}
+
+function PGDetail() {
+  const [pg, setPg] = useState(null);
+  const [risk, setRisk] = useState(null); // ✅ correct place
+
+  useEffect(() => {
+    fetch("../backend/api/pg-detail.php?id=" + pgId)
+      .then(res => res.json())
+      .then(data => setPg(data));
+
+    fetch("../backend/api/pg-list-risk.php")
+      .then(res => res.json())
+      .then(list => {
+        const found = list.find(x => String(x.id) === String(pgId));
+        setRisk(found || null);
+      });
+  }, []);
+
+  if (!pg) return React.createElement("h3", null, "Loading...");
+
+  return React.createElement(
+    "div",
+    { className: "dashboard-container" },
+
+    React.createElement(
+      "h2",
+      null,
+      pg.name,
+      risk ? React.createElement(
+        "span",
+        {
+          className: "badge " + (risk.risk_level === "High Risk" ? "riskHigh" :
+                                 risk.risk_level === "Warning" ? "riskWarn" : "riskSafe"),
+          style: { marginLeft: "10px" }
+        },
+        risk.risk_level
+      ) : null
+    ),
+
+    pg.photo ? React.createElement("img", {
+      src: "../uploads/pg/" + pg.photo,
+      style: {
+        width: "100%",
+        height: "220px",
+        objectFit: "cover",
+        borderRadius: "12px",
+        marginBottom: "15px"
+      }
+    }) : null,
+
+    React.createElement(
+      "div",
+      { className: "status-card pg" },
+
+      React.createElement("p", null, "💰 Price: ₹" + pg.price),
+      React.createElement("p", null, "📍 Distance: " + pg.distance + " km"),
+      React.createElement("p", null, "🏠 Type: " + pg.type),
+
+      React.createElement(
+        "p",
+        null,
+        "📞 Contact: ",
+        React.createElement(
+          "a",
+          { href: "tel:" + pg.phone, style: { color: "#22c55e", textDecoration:"none" } },
+          pg.phone
+        )
+      ),
+
+      React.createElement(
+        "a",
+        {
+          href:
+            "https://www.google.com/maps/search/?api=1&query=" +
+            encodeURIComponent(pg.address),
+          target: "_blank",
+          style: {
+            display: "inline-block",
+            marginTop: "10px",
+            padding: "10px",
+            background: "#3b82f6",
+            color: "white",
+            borderRadius: "8px",
+            textDecoration: "none"
+          }
+        },
+        "🗺 Open in Google Maps"
+      )
+    ),
+
+    React.createElement(
+      CollapsibleSection,
+      { title: "⭐ Reviews", defaultOpen: true },
+      React.createElement(ReviewSection, { pgId: pgId })
+    ),
+
+    React.createElement(
+      CollapsibleSection,
+      { title: "🚨 PG Complaints" },
+      React.createElement(PGComplaints, { pgId: pgId })
+    ),
+
+    React.createElement(
+      CollapsibleSection,
+      { title: "📌 Facilities & Rules" },
+      React.createElement("div", null,
+        React.createElement("p", null, "✅ Facilities: " + (pg.facilities || "Not added")),
+        React.createElement("p", null, "📜 Rules: " + (pg.rules || "Not added"))
+      )
+    )
+  );
+}
+
+requireLogin().then(me => {
+  if (!me) return;
+
+  document.getElementById("who").textContent = "👤 " + me.student_name;
+
+  ReactDOM.createRoot(document.getElementById("detail-root"))
+    .render(React.createElement(PGDetail));
+});
+
+
+function logout(){
+  fetch("../backend/auth/logout.php")
+    .then(()=> window.location.href = "index.html");
+}
+
+
+</script>
+
+</body>
+</html>

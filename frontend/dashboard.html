@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Survival System - Dashboard</title>
+
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <style>
+    .badge {
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-weight:bold;
+      font-size:12px;
+      margin-left:8px;
+    }
+    .riskSafe { background:#22c55e; color:#000; }
+    .riskWarn { background:#facc15; color:#000; }
+    .riskHigh { background:#ef4444; color:#fff; }
+
+    .mini { opacity:0.85; font-size:13px; margin-top:6px; }
+
+    .quickRow a{
+      display:inline-block;
+      padding:10px 12px;
+      border-radius:10px;
+      text-decoration:none;
+      margin-right:10px;
+      margin-top:10px;
+      color:#fff;
+    }
+    .q1{ background:#3b82f6; }
+    .q2{ background:#22c55e; color:#000 !important; }
+    .q3{ background:#ef4444; }
+  </style>
+</head>
+
+<body>
+<div id="dash-root"></div>
+
+<script>
+const { useState, useEffect } = React;
+
+function Dashboard() {
+  const [status, setStatus] = useState({ food:"Loading...", water:"Loading...", pg:"Loading..." });
+  const [intel, setIntel] = useState(null);
+
+  useEffect(() => {
+    // existing status API (your old one)
+    fetch("../backend/api/dashboard-status.php")
+      .then(r => r.json())
+      .then(setStatus)
+      .catch(()=>{});
+
+    // new intelligence API
+    fetch("../backend/api/dashboard-intel.php")
+      .then(r => r.json())
+      .then(setIntel)
+      .catch(()=>{});
+  }, []);
+
+  const cardStyle = (color) => ({
+    background: "#1a1a1a",
+    padding: "15px",
+    borderRadius: "10px",
+    marginBottom: "15px",
+    borderLeft: `6px solid ${color}`
+  });
+
+  const riskClass = (lvl) => {
+    if (lvl === "High Risk") return "badge riskHigh";
+    if (lvl === "Warning") return "badge riskWarn";
+    return "badge riskSafe";
+  };
+
+  return React.createElement(
+    "div",
+    { className:"dashboard-container" },
+
+    React.createElement("h2", null, "📊 Student Survival Dashboard"),
+
+    // Quick Actions
+    React.createElement(
+      "div",
+      { className:"status-card pg" },
+      React.createElement("h3", null, "⚡ Quick Actions"),
+      React.createElement("div", { className:"quickRow" },
+        React.createElement("a", { className:"q1", href:"pg.html" }, "🏠 Find PG/Rooms"),
+        
+      )
+    ),
+
+    // Your existing 3 status cards
+   
+
+    // Intelligence widgets
+    React.createElement(
+      "div",
+      { className:"status-card pg" },
+
+      React.createElement("h3", null, "🧠 Live Intelligence"),
+
+      intel
+        ? React.createElement("div", null,
+
+            React.createElement("p", null,
+              "📌 Trending PG Issue (7 days): ",
+              React.createElement("b", null, intel.trending_issue),
+              "  (" + intel.trending_issue_count + ")"
+            ),
+
+            React.createElement("p", null,
+              "🗓 Today PG Complaints: ",
+              React.createElement("b", null, String(intel.today_pg_complaints))
+            ),
+
+            React.createElement("hr", { style:{ borderColor:"#333" } }),
+
+            React.createElement("h4", null, "🚩 Top Risky PGs"),
+            (intel.top_risky_pgs && intel.top_risky_pgs.length)
+              ? intel.top_risky_pgs.map(pg =>
+                  React.createElement(
+                    "div",
+                    {
+                      key: pg.id,
+                      style:{ padding:"10px", borderRadius:"10px", background:"#111", marginBottom:"10px", cursor:"pointer" },
+                      onClick: ()=> window.location.href = "pg-detail.html?id=" + pg.id
+                    },
+
+                    React.createElement(
+                      "div",
+                      null,
+                      React.createElement("b", null, pg.name),
+                      React.createElement("span", { className: riskClass(pg.risk_level) }, pg.risk_level)
+                    ),
+
+                    React.createElement("div", { className:"mini" },
+                      "⭐ " + (pg.avg_rating || 0) + " (" + (pg.total_reviews || 0) + " reviews)  |  🚨 " + (pg.total_complaints || 0) + " complaints  |  RiskPts: " + (pg.risk_points || 0)
+                    )
+                  )
+                )
+              : React.createElement("p", null, "No data yet.")
+          )
+        : React.createElement("p", null, "Loading intelligence...")
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("dash-root"))
+  .render(React.createElement(Dashboard));
+</script>
+</body>
+</html>

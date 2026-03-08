@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Campus Complaints</title>
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <style>
+    .pill { padding:4px 10px; border-radius:999px; font-weight:bold; font-size:12px; }
+    .pending { background:#334155; color:#fff; }
+    .warning { background:#facc15; color:#000; }
+    .critical { background:#ef4444; color:#fff; }
+  </style>
+</head>
+<body>
+<div id="c-root"></div>
+
+<script>
+const { useState, useEffect } = React;
+
+function ComplaintsApp() {
+  const [list, setList] = useState([]);
+  const [student, setStudent] = useState("");
+  const [category, setCategory] = useState("water");
+  const [area, setArea] = useState("Hostel");
+  const [message, setMessage] = useState("");
+
+  function load() {
+    fetch("../backend/api/complaint-list.php")
+      .then(r=>r.json())
+      .then(setList);
+  }
+  useEffect(load, []);
+
+  function submit(e){
+    e.preventDefault();
+    const fd = new FormData();
+    fd.append("student_name", student);
+    fd.append("category", category);
+    fd.append("area", area);
+    fd.append("message", message);
+
+    fetch("../backend/api/complaint-add.php", { method:"POST", body: fd })
+      .then(r=>r.json())
+      .then(res=>{
+        if(res.ok){
+          setMessage("");
+          load();
+        } else alert("Failed");
+      });
+  }
+
+  function confirm(id){
+    if(!student) { alert("Enter your name first"); return; }
+    const fd = new FormData();
+    fd.append("complaint_id", id);
+    fd.append("student_name", student);
+
+    fetch("../backend/api/complaint-confirm.php", { method:"POST", body: fd })
+      .then(r=>r.json())
+      .then(res=>{
+        if(res.ok) load();
+        else alert(res.msg || "Already confirmed");
+      });
+  }
+
+  function sevClass(s){
+    if(s==="Critical") return "pill critical";
+    if(s==="Warning") return "pill warning";
+    return "pill pending";
+  }
+
+  return React.createElement(
+    "div",
+    { className:"dashboard-container" },
+
+    React.createElement("h2", null, "🚨 Campus Complaints"),
+
+    React.createElement("form", { onSubmit: submit, className:"status-card pg" },
+      React.createElement("h3", null, "Create Complaint"),
+
+      React.createElement("input", {
+        placeholder:"Your Name (for confirm too)",
+        value: student,
+        onChange: e=>setStudent(e.target.value),
+        required:true,
+        style:{ width:"100%", padding:"10px", borderRadius:"8px", marginBottom:"10px" }
+      }),
+
+      React.createElement("select", {
+        value: category,
+        onChange: e=>setCategory(e.target.value),
+        style:{ width:"100%", padding:"10px", borderRadius:"8px", marginBottom:"10px" }
+      },
+        ["water","wifi","electricity","hygiene","security"].map(x =>
+          React.createElement("option", { key:x, value:x }, x)
+        )
+      ),
+
+      React.createElement("select", {
+        value: area,
+        onChange: e=>setArea(e.target.value),
+        style:{ width:"100%", padding:"10px", borderRadius:"8px", marginBottom:"10px" }
+      },
+        ["Hostel","Canteen","Lab","Block A","Block B"].map(x =>
+          React.createElement("option", { key:x, value:x }, x)
+        )
+      ),
+
+      React.createElement("textarea", {
+        placeholder:"Describe the issue",
+        value: message,
+        onChange: e=>setMessage(e.target.value),
+        required:true,
+        style:{ width:"100%", padding:"10px", borderRadius:"8px" }
+      }),
+
+      React.createElement("button", {
+        type:"submit",
+        style:{ marginTop:"10px", padding:"10px", borderRadius:"8px", background:"#22c55e", border:"none", cursor:"pointer", fontWeight:"bold" }
+      }, "Submit")
+    ),
+
+    React.createElement("h3", null, "Live Issues"),
+    list.map(item =>
+      React.createElement(
+        "div",
+        { key:item.id, className:"status-card pg" },
+
+        React.createElement("div", null,
+          React.createElement("b", null, item.category.toUpperCase() + " - " + item.area),
+          " ",
+          React.createElement("span", { className: sevClass(item.severity) }, item.severity)
+        ),
+
+        React.createElement("p", null, item.message),
+        React.createElement("p", null, "By: " + item.student_name + " | Confirms: " + item.confirms),
+
+        React.createElement("button", {
+          onClick: ()=>confirm(item.id),
+          style:{ padding:"8px 12px", borderRadius:"8px", cursor:"pointer" }
+        }, "✅ Confirm")
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("c-root"))
+  .render(React.createElement(ComplaintsApp));
+</script>
+</body>
+</html>

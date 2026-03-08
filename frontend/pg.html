@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Nearby PG & Rooms</title>
+
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <style>
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: bold;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+
+    .riskSafe { background:#22c55e; color:#000; }
+    .riskWarn { background:#facc15; color:#000; }
+    .riskHigh { background:#ef4444; color:#fff; }
+
+    .miniText { opacity: 0.85; font-size: 13px; margin-top: 6px; }
+    .btnRow a{
+      display:inline-block;
+      margin-top:10px;
+      padding:8px 12px;
+      border-radius:8px;
+      text-decoration:none;
+      color:#fff;
+    }
+    .mapBtn { background:#3b82f6; }
+    .detailBtn { background:#22c55e; color:#000 !important; }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top mini bar (used by JS, prevents null error) -->
+<div style="position:fixed; top:12px; right:12px; z-index:9999; display:flex; gap:10px; align-items:center;">
+  <span id="whoami" style="opacity:.9;"></span>
+  <button id="logoutBtn"
+    style="display:none;background:#ef4444;color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:800;cursor:pointer;">
+    Logout
+  </button>
+</div>
+  
+
+
+
+<div id="pg-root"></div>
+
+
+
+<script>
+
+  async function requireLogin() {
+  const res = await fetch("../backend/auth/me.php", { cache: "no-store" });
+  const me = await res.json();
+
+  if (!me.loggedIn) {
+    window.location.href = "login.html?next=pg.html";
+    return null;
+  }
+  return me;
+}
+
+requireLogin().then(me => {
+  if (!me) return;
+
+  // ✅ Show who is logged in (correct id)
+  const who = document.getElementById("whoami");
+  if (who) who.textContent = "👤 " + (me.student_name || "Student");
+
+  // ✅ Wire logout button
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.style.display = "inline-block";
+    logoutBtn.onclick = () => {
+      fetch("../backend/auth/logout.php")
+        .then(() => window.location.href = "index.html");
+    };
+  }
+
+  ReactDOM.createRoot(document.getElementById("pg-root"))
+    .render(React.createElement(PGPage));
+});
+
+
+const { useState, useEffect } = React;
+
+function PGPage() {
+  const [list, setList] = useState([]);
+  const [maxPrice, setMaxPrice] = useState(10000);
+
+  useEffect(() => {
+    // ✅ Use risk+stats API
+    fetch("../backend/api/pg-list-risk.php")
+      .then(res => res.json())
+      .then(data => setList(data));
+  }, []);
+
+  const filteredList = list
+    .filter(item => Number(item.price) <= Number(maxPrice))
+    .sort((a, b) => Number(a.distance) - Number(b.distance)); // nearest first
+
+  const riskClass = (lvl) => {
+    if (lvl === "High Risk") return "badge riskHigh";
+    if (lvl === "Warning") return "badge riskWarn";
+    return "badge riskSafe";
+  };
+
+  return React.createElement(
+    "div",
+    { className: "dashboard-container" },
+
+    React.createElement("h2", null, "🏠 Nearby Rooms & PG"),
+
+    React.createElement("p", null, "Max Price: ₹" + maxPrice),
+    React.createElement("input", {
+      type: "range",
+      min: 2000,
+      max: 10000,
+      value: maxPrice,
+      onChange: e => setMaxPrice(e.target.value)
+    }),
+
+    filteredList.map((item, index) =>
+      React.createElement(
+        "div",
+        {
+          key: item.id,
+          className: "status-card pg",
+          style: { cursor: "pointer" },
+          onClick: () => window.location.href = "pg-detail.html?id=" + item.id
+        },
+
+        // PHOTO (optional)
+        item.photo ? React.createElement("img", {
+          src: "../uploads/pg/" + item.photo,
+          onClick: (e) => e.stopPropagation(),
+          style: {
+            width: "100%",
+            height: "150px",
+            objectFit: "cover",
+            borderRadius: "8px",
+            marginBottom: "8px"
+          }
+        }) : null,
+
+        // TITLE + NEAREST + RISK
+        React.createElement(
+          "div",
+          null,
+          item.name,
+
+          index === 0
+            ? React.createElement("span", { className: "badge riskSafe" }, "Nearest")
+            : null,
+
+          React.createElement(
+            "span",
+            { className: riskClass(item.risk_level) },
+            item.risk_level || "Safe"
+          )
+        ),
+
+        // BASIC INFO
+        React.createElement(
+          "div",
+          { className: "miniText" },
+          "₹" + item.price + " | " + item.distance + " km | " + item.type
+        ),
+
+        // STATS (from API)
+        React.createElement(
+          "div",
+          { className: "miniText" },
+          "⭐ " + (item.avg_rating || 0) + " (" + (item.total_reviews || 0) + " reviews)  |  🚨 " + (item.total_complaints || 0) + " complaints"
+        ),
+
+        // CONTACT (stop card click)
+        React.createElement(
+          "div",
+          { style: { marginTop: "8px" } },
+          "📞 ",
+          React.createElement(
+            "a",
+            {
+              href: "tel:" + item.phone,
+              onClick: (e) => e.stopPropagation(),
+              style: { color: "#22c55e", textDecoration: "none" }
+            },
+            item.phone || "N/A"
+          )
+        ),
+
+        // BUTTONS
+        React.createElement(
+          "div",
+          { className: "btnRow" },
+
+          React.createElement(
+            "a",
+            {
+              href: "pg-detail.html?id=" + item.id,
+              className: "detailBtn",
+              onClick: (e) => e.stopPropagation()
+            },
+            "View Details"
+          ),
+
+          React.createElement(
+            "a",
+            {
+              href: "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(item.address || ""),
+              target: "_blank",
+              className: "mapBtn",
+              onClick: (e) => e.stopPropagation()
+            },
+            "🗺 Road Map"
+          )
+        )
+      )
+    )
+  );
+}
+
+requireLogin().then(me => {
+  if (!me) return;
+
+  // Show who is logged in
+  document.getElementById("who").textContent = "👤 " + me.student_name;
+
+  ReactDOM.createRoot(document.getElementById("pg-root"))
+    .render(React.createElement(PGPage));
+});
+
+
+  function logout(){
+  fetch("../backend/auth/logout.php")
+    .then(()=> window.location.href = "index.html");
+}
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SSS Dashboard</title>
+  <meta charset="UTF-8">
+
+  <!-- React CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+  <style>
+    body {
+      margin: 0;
+      background: #0f0f0f;
+      color: white;
+      font-family: Arial;
+    }
+    .header {
+      padding: 15px;
+      background: #111;
+      text-align: center;
+      font-size: 20px;
+    }
+    .container {
+      padding: 20px;
+    }
+  </style>
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
+
+</head>
+
+<body>
+
+  <div class="header">
+    Student Survival System – Dashboard
+  </div>
+
+  <!-- React will render here -->
+  <div class="container">
+    <div id="react-dashboard"></div>
+  </div>
+
+  <!-- React Logic -->
+  <script src="../assets/js/dashboard-react.js"></script>
+
+</body>
+</html>

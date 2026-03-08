@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Food Details</title>
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
+
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <style>
+    body{ background:#0b0b0b; color:#fff; font-family:system-ui, Arial; }
+    .wrap{ max-width:900px; margin:0 auto; padding:16px; }
+    .topbar{ display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+    .pill{ background:#111; border:1px solid #222; padding:8px 10px; border-radius:999px; opacity:.95; }
+    .btn{ padding:9px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:800; }
+    .blue{ background:#3b82f6; color:#fff; }
+    .red{ background:#ef4444; color:#fff; }
+    .green{ background:#22c55e; color:#000; }
+
+    .card{ background:#111; border:1px solid #222; border-radius:16px; padding:14px; }
+    .heroImg{ width:100%; height:220px; object-fit:cover; border-radius:14px; border:1px solid #222; margin-bottom:12px; }
+
+    .badge{ padding:4px 10px; border-radius:999px; font-size:12px; font-weight:900; }
+    .safe{ background:#22c55e; color:#000; }
+    .warn{ background:#facc15; color:#000; }
+    .high{ background:#ef4444; color:#fff; }
+
+    .row{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .muted{ color:#cfcfcf; font-size:13px; opacity:.92; }
+
+    .sectionBtn{
+      width:100%;
+      text-align:left;
+      padding:12px;
+      margin-top:12px;
+      border-radius:12px;
+      background:#0f0f0f;
+      color:#fff;
+      border:1px solid #222;
+      cursor:pointer;
+      font-weight:900;
+    }
+    .sectionBox{
+      margin-top:10px;
+      padding:12px;
+      border-radius:14px;
+      background:#111;
+      border:1px solid #222;
+    }
+
+    input, select, textarea{
+      width:100%;
+      padding:10px;
+      border-radius:10px;
+      border:1px solid #222;
+      background:#0f0f0f;
+      color:#fff;
+      outline:none;
+      margin-top:8px;
+      box-sizing:border-box;
+    }
+
+    .miniBtn{
+      padding:9px 12px;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+    }
+
+    .pillSmall{ padding:4px 10px; border-radius:999px; font-size:12px; font-weight:900; }
+    .pending{ background:#334155; color:#fff; }
+    .warning{ background:#facc15; color:#000; }
+    .critical{ background:#ef4444; color:#fff; }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <!-- Top bar: login status (public view allowed) -->
+  <div class="topbar">
+    <div id="who" class="pill">👤 Guest</div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button id="loginBtn" class="btn blue" onclick="goLogin()" style="display:none;">Login</button>
+      <button id="logoutBtn" class="btn red" onclick="logoutStudent()" style="display:none;">Logout</button>
+    </div>
+  </div>
+
+  <div id="detail-root"></div>
+</div>
+
+<script>
+const { useState, useEffect } = React;
+
+const params = new URLSearchParams(window.location.search);
+const foodId = params.get("id");
+
+let CURRENT_STUDENT = null;
+
+function riskClass(r){
+  if(r==="High Risk") return "badge high";
+  if(r==="Warning") return "badge warn";
+  return "badge safe";
+}
+function sevClass(s){
+  if(s==="Critical") return "pillSmall critical";
+  if(s==="Warning") return "pillSmall warning";
+  return "pillSmall pending";
+}
+
+function goLogin(){
+  const cur = "food-detail.html" + window.location.search;
+  window.location.href = "login.html?next=" + encodeURIComponent(cur);
+}
+function logoutStudent(){
+  fetch("../backend/auth/logout.php").then(()=> window.location.href="index.html");
+}
+
+async function initAuthUI(){
+  const res = await fetch("../backend/auth/me.php");
+  const me = await res.json();
+  if(me.loggedIn){
+    CURRENT_STUDENT = me;
+    document.getElementById("who").textContent = "👤 " + me.student_name;
+    document.getElementById("logoutBtn").style.display = "inline-block";
+  } else {
+    document.getElementById("who").textContent = "👤 Guest";
+    document.getElementById("loginBtn").style.display = "inline-block";
+  }
+}
+
+function CollapsibleSection({ title, children, defaultOpen=false }){
+  const [open, setOpen] = useState(defaultOpen);
+  return React.createElement(
+    "div",
+    null,
+    React.createElement(
+      "button",
+      { className:"sectionBtn", onClick:()=>setOpen(!open) },
+      (open ? "▼ " : "► ") + title
+    ),
+    open ? React.createElement("div", { className:"sectionBox" }, children) : null
+  );
+}
+
+function ReviewSection({ foodId }){
+  const [meta, setMeta] = useState(null);
+  const [rating, setRating] = useState(5);
+  const [text, setText] = useState("");
+
+  function load(){
+    fetch("../backend/api/food-review-list.php?food_id="+foodId)
+      .then(r=>r.json())
+      .then(setMeta);
+  }
+  useEffect(load, []);
+
+  function submit(e){
+    e.preventDefault();
+    if(!CURRENT_STUDENT){ alert("Login required"); return; }
+
+    const fd = new FormData();
+    fd.append("food_id", foodId);
+    fd.append("rating", rating);
+    fd.append("review_text", text);
+
+    fetch("../backend/api/food-review-add.php", { method:"POST", body: fd })
+      .then(r=>r.json())
+      .then(res=>{
+        if(res.ok){
+          setText(""); setRating(5);
+          load();
+        } else alert(res.msg || "Failed");
+      });
+  }
+
+  if(!meta) return React.createElement("div", null, "Loading reviews...");
+
+  return React.createElement(
+    "div",
+    null,
+    React.createElement("div", { className:"muted" },
+      "Average: ", meta.avg_rating, " / 5  (", meta.total_reviews, " reviews)"
+    ),
+    React.createElement("hr", { style:{ borderColor:"#222", margin:"12px 0" } }),
+
+    CURRENT_STUDENT
+      ? React.createElement(
+          React.Fragment,
+          null,
+          React.createElement("b", null, "Add Review"),
+          React.createElement("form", { onSubmit: submit },
+            React.createElement("select", { value:rating, onChange:e=>setRating(e.target.value) },
+              [5,4,3,2,1].map(n => React.createElement("option", { key:n, value:n }, n))
+            ),
+            React.createElement("textarea", {
+              placeholder:"Short review (optional)",
+              value:text,
+              onChange:e=>setText(e.target.value),
+              rows:3
+            }),
+            React.createElement("button", { className:"btn green", style:{ marginTop:"10px" } }, "Submit Review")
+          )
+        )
+      : React.createElement(
+          "div",
+          { className:"card", style:{ marginTop:"10px" } },
+          "🔒 Login required to submit a review. ",
+          React.createElement("button", { className:"btn blue", style:{ marginLeft:"10px" }, onClick:goLogin }, "Login")
+        ),
+
+    React.createElement("hr", { style:{ borderColor:"#222", margin:"12px 0" } }),
+    React.createElement("b", null, "Recent Reviews"),
+
+    meta.reviews && meta.reviews.length
+      ? meta.reviews.map(r =>
+          React.createElement("div", { key:r.id, className:"card", style:{ marginTop:"10px" } },
+            React.createElement("b", null, (r.student_name || "Student") + "  ⭐" + r.rating),
+            React.createElement("div", { className:"muted", style:{ marginTop:"6px" } }, r.review_text || "(no text)")
+          )
+        )
+      : React.createElement("div", { className:"muted", style:{ marginTop:"8px" } }, "No reviews yet.")
+  );
+}
+
+function ComplaintSection({ foodId }){
+  const [list, setList] = useState([]);
+  const [issue, setIssue] = useState("hygiene");
+  const [message, setMessage] = useState("");
+
+  function load(){
+    fetch("../backend/api/food-complaint-list.php?food_id="+foodId)
+      .then(r=>r.json())
+      .then(setList);
+  }
+  useEffect(load, []);
+
+  function submit(e){
+    e.preventDefault();
+    if(!CURRENT_STUDENT){ alert("Login required"); return; }
+
+    const fd = new FormData();
+    fd.append("food_id", foodId);
+    fd.append("issue", issue);
+    fd.append("message", message);
+
+    fetch("../backend/api/food-complaint-add.php", { method:"POST", body: fd })
+      .then(r=>r.json())
+      .then(res=>{
+        if(res.ok){
+          setMessage("");
+          load();
+        } else alert(res.msg || "Failed");
+      });
+  }
+
+  function confirm(id){
+    if(!CURRENT_STUDENT){ alert("Login required"); return; }
+
+    const fd = new FormData();
+    fd.append("complaint_id", id);
+
+    fetch("../backend/api/food-complaint-confirm.php", { method:"POST", body: fd })
+      .then(r=>r.json())
+      .then(res=>{
+        if(res.ok) load();
+        else alert(res.msg || "Failed");
+      });
+  }
+
+  return React.createElement(
+    "div",
+    null,
+
+    CURRENT_STUDENT
+      ? React.createElement(
+          React.Fragment,
+          null,
+          React.createElement("b", null, "Report an Issue"),
+          React.createElement("form", { onSubmit: submit },
+            React.createElement("select", { value:issue, onChange:e=>setIssue(e.target.value) },
+              ["hygiene","quality","overpricing","delay","taste","portion"].map(x =>
+                React.createElement("option", { key:x, value:x }, x)
+              )
+            ),
+            React.createElement("textarea", {
+              placeholder:"Describe the issue",
+              value:message,
+              onChange:e=>setMessage(e.target.value),
+              rows:3,
+              required:true
+            }),
+            React.createElement("button", { className:"btn green", style:{ marginTop:"10px" } }, "Submit Issue")
+          )
+        )
+      : React.createElement(
+          "div",
+          { className:"card" },
+          "🔒 Login required to report/confirm issues. ",
+          React.createElement("button", { className:"btn blue", style:{ marginLeft:"10px" }, onClick:goLogin }, "Login")
+        ),
+
+    React.createElement("hr", { style:{ borderColor:"#222", margin:"12px 0" } }),
+    React.createElement("b", null, "Live Issues"),
+
+    list && list.length
+      ? list.map(item =>
+          React.createElement("div", { key:item.id, className:"card", style:{ marginTop:"10px" } },
+            React.createElement("div", { style:{ display:"flex", justifyContent:"space-between", gap:"10px" } },
+              React.createElement("b", null, (item.issue || "").toUpperCase()),
+              React.createElement("span", { className: sevClass(item.severity) }, item.severity)
+            ),
+            React.createElement("div", { className:"muted", style:{ marginTop:"6px" } }, item.message),
+            React.createElement("div", { className:"muted", style:{ marginTop:"8px" } }, "Confirms: " + item.confirms),
+            React.createElement("button", {
+              className:"btn blue",
+              style:{ marginTop:"10px", opacity: CURRENT_STUDENT ? 1 : 0.6 },
+              onClick: ()=>confirm(item.id)
+            }, CURRENT_STUDENT ? "✅ Confirm" : "Login required")
+          )
+        )
+      : React.createElement("div", { className:"muted", style:{ marginTop:"8px" } }, "No issues reported yet.")
+  );
+}
+
+function FoodDetail(){
+  const [food, setFood] = useState(null);
+
+  useEffect(()=>{
+    fetch("../backend/api/food-detail.php?id="+foodId)
+      .then(r=>r.json())
+      .then(setFood);
+  }, []);
+
+  if(!food) return React.createElement("div", { className:"card" }, "Loading...");
+
+  const badgeCls = riskClass(food.risk);
+
+  return React.createElement(
+    "div",
+    null,
+
+    React.createElement("div", { className:"row", style:{ marginBottom:"10px" } },
+      React.createElement("h2", { style:{ margin:0 } }, food.name),
+      React.createElement("span", { className: badgeCls }, food.risk)
+    ),
+
+    food.photo
+      ? React.createElement("img", { className:"heroImg", src:"../uploads/food/" + food.photo })
+      : React.createElement("div", { className:"card", style:{ marginBottom:"12px" } }, "No photo uploaded"),
+
+    React.createElement(
+      "div",
+      { className:"card" },
+      React.createElement("div", { className:"muted" },
+        "₹", food.price, " | ", food.distance, " km | ", food.type
+      ),
+      React.createElement("div", { className:"muted", style:{ marginTop:"6px" } },
+        "⭐ ", Number(food.avg_rating).toFixed(1), " (", food.total_reviews, " reviews) • Total issue confirms: ", food.total_confirms
+      ),
+
+      React.createElement("div", { style:{ marginTop:"10px", display:"flex", gap:"10px", flexWrap:"wrap" } },
+        food.phone ? React.createElement("a", { className:"btn green", href:"tel:"+food.phone, style:{ textDecoration:"none", display:"inline-block" } }, "📞 Call") : null,
+        React.createElement("a", {
+          className:"btn blue",
+          href:"https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(food.address),
+          target:"_blank",
+          style:{ textDecoration:"none", display:"inline-block" }
+        }, "🗺 Open Map")
+      ),
+
+      React.createElement("div", { className:"muted", style:{ marginTop:"10px" } }, "Address: ", food.address)
+    ),
+
+    React.createElement(
+      CollapsibleSection,
+      { title:"⭐ Reviews", defaultOpen:true },
+      React.createElement(ReviewSection, { foodId })
+    ),
+
+    React.createElement(
+      CollapsibleSection,
+      { title:"🚨 Food Issues (Real-time)" },
+      React.createElement(ComplaintSection, { foodId })
+    )
+  );
+}
+
+/* init auth UI then render */
+initAuthUI().then(()=>{
+  ReactDOM.createRoot(document.getElementById("detail-root"))
+    .render(React.createElement(FoodDetail));
+});
+</script>
+
+</body>
+</html>

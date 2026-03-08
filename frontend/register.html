@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Student Register</title>
+  <style>
+    body{ background:#0f0f0f; color:#fff; font-family:Arial; }
+    .box{
+      max-width:400px;
+      margin:80px auto;
+      background:#111;
+      padding:20px;
+      border-radius:14px;
+      border:1px solid #222;
+    }
+    input{
+      width:100%;
+      padding:10px;
+      margin-top:10px;
+      border-radius:10px;
+      border:1px solid #222;
+      background:#0b0b0b;
+      color:#fff;
+    }
+    button{
+      width:100%;
+      margin-top:15px;
+      padding:10px;
+      border:none;
+      border-radius:10px;
+      background:#22c55e;
+      font-weight:bold;
+      cursor:pointer;
+    }
+    a{ color:#3b82f6; text-decoration:none; }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Create Student Account</h2>
+
+  <form method="POST" action="../backend/auth/register.php">
+    <input name="name" placeholder="Full Name" required>
+    <input name="email" type="email" placeholder="Email" required>
+    <input name="password" type="password" placeholder="Password" required>
+    <button>Create Account</button>
+  </form>
+
+  <p style="margin-top:10px;">
+    Already have account? <a href="login.html">Login</a>
+  </p>
+</div>
+
+</body>
+</html>

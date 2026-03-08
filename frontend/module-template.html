@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>SSS Module</title>
+  <link rel="stylesheet" href="../assets/css/ui-kit.css">
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="nav">
+    <div class="brand">🛟 SSS</div>
+
+    <div class="search">
+      <input placeholder="Search in SSS..." />
+      <button>🔍</button>
+    </div>
+
+    <div class="right">
+      <div id="who" class="pill">👤 ...</div>
+      <button class="btn red" onclick="logoutStudent()">Logout</button>
+    </div>
+  </div>
+</div>
+
+<!-- MENU -->
+<div class="menu">
+  <div class="menuRow">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="pg.html">PG/Rooms</a>
+    <a href="complaints.html">Complaints</a>
+    <a href="#">Food</a>
+    <a href="#">Medical</a>
+    <a href="#">Expense</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="heroGrid">
+    <div class="heroCard">
+      <h1 class="heroTitle">Module Title</h1>
+      <div class="heroSub">
+        Short line: Real-time + verified student support system.
+      </div>
+      <div class="heroActions">
+        <button class="btn green">Explore</button>
+        <button class="btn blue">Report</button>
+      </div>
+    </div>
+
+    <div class="heroCard">
+      <b>Live Insight</b>
+      <div class="heroSub">Trending issue, risky PGs, etc.</div>
+    </div>
+  </div>
+
+  <div class="featureRow">
+    <div class="feature">⚡ <b>Real-time</b><span>Student reported data</span></div>
+    <div class="feature">✅ <b>Verified</b><span>Login based actions</span></div>
+    <div class="feature">📍 <b>Nearby</b><span>Distance + map</span></div>
+    <div class="feature">🧠 <b>Smart</b><span>Risk & analytics</span></div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+  <div class="heroCard">
+    Put your module content here (React root / cards / tables)
+  </div>
+</div>
+
+<script>
+async function requireLogin(){
+  const res = await fetch("../backend/auth/me.php");
+  const me = await res.json();
+  if(!me.loggedIn){
+    window.location.href = "login.html?next=" + encodeURIComponent(location.pathname.split("/").pop());
+    return null;
+  }
+  document.getElementById("who").textContent = "👤 " + me.student_name;
+  return me;
+}
+
+function logoutStudent(){
+  fetch("../backend/auth/logout.php").then(()=> window.location.href="index.html");
+}
+
+requireLogin();
+</script>
+
+</body>
+</html>

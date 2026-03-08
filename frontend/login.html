@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Login</title>
+  <link rel="stylesheet" href="../assets/css/dashboard.css">
+  <style>
+    .box{ max-width:420px; margin:80px auto; background:#111; border:1px solid #222; padding:20px; border-radius:12px; }
+    input, button{ width:100%; padding:12px; margin-top:10px; border-radius:10px; border:none; }
+    button{ background:#22c55e; font-weight:bold; cursor:pointer; color:#000; }
+    .err{ background:#ef4444; padding:10px; border-radius:10px; margin-top:10px; display:none; }
+    a{ color:#3b82f6; text-decoration:none; }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>🎓 Student Login</h2>
+  <div id="err" class="err"></div>
+
+  <form id="f">
+    <input name="email" type="email" placeholder="Email" required />
+    <input name="password" type="password" placeholder="Password" required />
+    <button>Login</button>
+  </form>
+
+  <p style="margin-top:10px; opacity:0.8;">
+    <a href="index.html">← Back to Home</a>
+  </p>
+  <p style="margin-top:10px;">
+  New student? <a href="register.html">Create account</a>
+</p>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const next = params.get("next") || "dashboard.html";
+
+const form = document.getElementById("f");
+const err = document.getElementById("err");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  err.style.display = "none";
+
+  const fd = new FormData(form);
+
+  const res = await fetch("../backend/auth/login.php", {
+    method: "POST",
+    body: fd
+  });
+
+  const data = await res.json();
+
+  if (!data.ok) {
+    err.style.display = "block";
+    err.textContent = data.msg || "Login failed";
+    return;
+  }
+
+  window.location.href = next;
+});
+</script>
+</body>
+</html>

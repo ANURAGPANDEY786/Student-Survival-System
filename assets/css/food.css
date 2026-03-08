@@ -1,0 +1,150 @@
+/* Food Listing - Clean Dark Grid (SSS theme) */
+.page-wrap{
+  max-width:1100px;
+  margin:0 auto;
+  padding:16px;
+}
+
+.topRow{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+
+.searchBox{
+  flex:1;
+  min-width:260px;
+  display:flex;
+  gap:10px;
+}
+
+.searchBox input{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #222;
+  background:#111;
+  color:#fff;
+  outline:none;
+}
+
+.filters{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin:10px 0 16px 0;
+}
+
+.filters .chip{
+  background:#111;
+  border:1px solid #222;
+  color:#ddd;
+  padding:10px 12px;
+  border-radius:12px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.filters select, .filters input[type="range"]{
+  accent-color:#3b82f6;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:14px;
+}
+
+@media (max-width: 900px){
+  .grid{ grid-template-columns:repeat(2,1fr); }
+}
+
+@media (max-width: 560px){
+  .grid{ grid-template-columns:1fr; }
+}
+
+.card{
+  background:#111;
+  border:1px solid #222;
+  border-radius:16px;
+  overflow:hidden;
+  transition:transform .12s ease, border-color .12s ease;
+  cursor:pointer;
+}
+
+.card:hover{
+  transform:translateY(-2px);
+  border-color:#333;
+}
+
+.card img{
+  width:100%;
+  height:160px;
+  object-fit:cover;
+  display:block;
+}
+
+.cardBody{
+  padding:12px 12px 14px 12px;
+}
+
+.titleRow{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+
+.name{
+  font-weight:800;
+  letter-spacing:.2px;
+}
+
+.badge{
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.safe{ background:#22c55e; color:#000; }
+.warn{ background:#facc15; color:#000; }
+.high{ background:#ef4444; color:#fff; }
+
+.meta{
+  margin-top:6px;
+  color:#cfcfcf;
+  font-size:13px;
+  opacity:.92;
+}
+
+.rating{
+  margin-top:8px;
+  color:#eaeaea;
+  font-size:13px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  opacity:.95;
+}
+
+.btnRow{
+  margin-top:12px;
+}
+
+.btnPrimary{
+  display:block;
+  text-align:center;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#3b82f6;
+  color:#fff;
+  text-decoration:none;
+  font-weight:800;
+}
