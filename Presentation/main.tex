@@ -1,0 +1,156 @@
+\documentclass[10pt]{beamer}
+
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+
+% ---------- ICONS ----------
+\usepackage{fontawesome}
+
+% ---------- CLEAN CORPORATE BACKGROUND ----------
+\usepackage{tikz}
+\usebackgroundtemplate{
+\begin{tikzpicture}[remember picture,overlay]
+  % Deep corporate navy gradient
+  \path[shade, top color=black!98, bottom color=blue!25!black]
+    (current page.south west) rectangle (current page.north east);
+\end{tikzpicture}
+}
+
+% ---------- CORPORATE COLORS ----------
+\setbeamercolor{normal text}{fg=white}
+\setbeamercolor{frametitle}{fg=cyan}
+\setbeamercolor{title}{fg=cyan}
+\setbeamercolor{structure}{fg=cyan}
+
+% Professional block styling
+\setbeamercolor{block title}{bg=cyan!18, fg=white}
+\setbeamercolor{block body}{bg=black!35, fg=white}
+
+% Remove navigation symbols
+\setbeamertemplate{navigation symbols}{}
+
+% ---------- META ----------
+\title{Student Survival System (SSS)}
+\subtitle{Real-Time Verified Support Platform for Students}
+\author{Anurag \quad | \quad Vineet | \quad Jitendra \quad | \quad Asgar}
+\institute{B.Tech CSE \\ Section 2 \\ Institute Of Engineering And TechnologymainLucknow}
+\date{}
+
+\begin{document}
+
+%------------------ Slide 1 ------------------
+\begin{frame}
+\titlepage
+\vspace{0.3cm}
+\centering
+\textcolor{cyan!70}{\faLock \;\; Verified Reviews \;\;|\;\; \faBellO \;\; Real-Time Complaints \;\;|\;\; \faLineChart \;\; Risk Badge}
+\end{frame}
+
+%------------------ Slide 2 ------------------
+\begin{frame}{\faExclamationTriangle \;\; Problem Statement}
+\begin{itemize}
+    \item[\faHome] Students face difficulty finding reliable PG/Rooms near college.
+    \item[\faUser] Reviews are often fake or outdated.
+    \item[\faBug] No real-time issue reporting system.
+    \item[\faLock] No verification or confirmation mechanism.
+\end{itemize}
+\end{frame}
+
+%------------------ Slide 3 ------------------
+\begin{frame}{\faLightbulbO \;\; Proposed Solution}
+\begin{itemize}
+    \item[\faMapMarker] PG listing with price, distance, contact and map.
+    \item[\faUser] Login-based verified student reviews.
+    \item[\faCommentsO] Complaint system with peer confirmation.
+    \item[\faLineChart] Risk badge based on real-time activity.
+    \item[\faCogs] Admin moderation system.
+\end{itemize}
+\end{frame}
+
+%------------------ Slide 4 ------------------
+\begin{frame}{\faExchange \;\; Comparison}
+\begin{columns}
+
+\column{0.48\textwidth}
+\begin{block}{\faGlobe \;\; Existing Platforms}
+\begin{itemize}
+    \item Open public reviews
+    \item No confirmation mechanism
+    \item Static listings
+    \item No risk analysis
+\end{itemize}
+\end{block}
+
+\column{0.48\textwidth}
+\begin{block}{\faLock \;\; SSS}
+\begin{itemize}
+    \item Authorized login access
+    \item Complaint confirmation system
+    \item Real-time reporting
+    \item Risk level indication
+    \item Admin moderation
+\end{itemize}
+\end{block}
+
+\end{columns}
+\end{frame}
+
+%------------------ Slide 5 ------------------
+\begin{frame}{\faWrench \;\; Technology Stack}
+\begin{itemize}
+    \item[\faDesktop] Frontend: HTML, CSS, JavaScript, React (CDN)
+    \item[\faServer] Backend: PHP (XAMPP)
+    \item[\faDatabase] Database: MySQL
+    \item[\faMapMarker] Google Maps API
+    \item[\faCodeFork] GitHub
+\end{itemize}
+\end{frame}
+
+%------------------ Slide 6 ------------------
+\begin{frame}{\faClockO \;\; Timeline \& Status}
+\begin{columns}
+\column{0.5\textwidth}
+\begin{block}{Timeline}
+\begin{itemize}
+    \item Week 1: Database + PG module
+    \item Week 2: Login + Reviews
+    \item Week 3: Admin + Risk logic
+\end{itemize}
+\end{block}
+
+\column{0.5\textwidth}
+\begin{block}{Current Status}
+\begin{itemize}
+    \item PG module completed
+    \item Login system working
+    \item Admin dashboard functional
+    \item Future modules planned
+\end{itemize}
+\end{block}
+\end{columns}
+\end{frame}
+
+%------------------ Slide 7 ------------------
+\begin{frame}{\faRocket \;\; Future Scope}
+\begin{itemize}
+    \item[\faCutlery] Food availability module
+    \item[\faMedkit] Medical emergency support
+    \item[\faMoney] Expense tracking
+    \item[\faBellO] Smart alerts
+\end{itemize}
+\end{frame}
+
+%------------------ Slide 8 ------------------
+\begin{frame}{\faFlagCheckered \;\; Conclusion}
+\begin{itemize}
+    \item[\faLock] Improves trust using verified login.
+    \item[\faCheckCircle] Reduces fake reviews.
+    \item[\faLineChart] Enables safer PG selection.
+\end{itemize}
+
+\centering
+\vspace{0.3cm}
+\textcolor{cyan!70}{\Large \faThumbsUp \;\; Thank You}
+\end{frame}
+
+\end{document}
