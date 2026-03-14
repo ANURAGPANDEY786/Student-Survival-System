@@ -103,7 +103,7 @@ Mini Project – Student Survival System
 ---
 ## Contributors
 - Anurag Pandey - PG/Rooms Module
-- Vineet Kumar - Medical Module
+- Vineet Kumar - Medical Module    -Jitendra patel-expense Module
 
 ## 📄 License
 
