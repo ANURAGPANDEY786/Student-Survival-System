@@ -103,7 +103,8 @@ Mini Project – Student Survival System
 ---
 ## Contributors
 - Anurag Pandey - PG/Rooms Module
----
+- Vineet Kumar - Medical Module
+
 ## 📄 License
 
 This project is developed for academic and educational purposes.
