@@ -88,7 +88,7 @@ Tools & Environment
 
 ---
 
-## 👨‍💻 Authors
+## Authors
 
 Anurag Pandey  
 
@@ -101,7 +101,9 @@ B.Tech Computer Science Engineering
 Mini Project – Student Survival System
 
 ---
-
+## Contributors
+- Anurag Pandey - PG/Rooms Module
+---
 ## 📄 License
 
 This project is developed for academic and educational purposes.
