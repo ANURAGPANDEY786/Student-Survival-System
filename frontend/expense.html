@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Expense Tracker</title>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body{ background:#0b0b0b; color:#fff; margin:0; font-family:Arial; }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      background:#0f0f0f;
+      border-bottom:1px solid #222;
+      padding:12px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      z-index:1000;
+    }
+
+    .title{ font-weight:800; }
+
+    .btn{
+      padding:8px 12px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:bold;
+    }
+
+    .logout{ background:#ef4444; color:#fff; }
+
+    .container{
+      max-width:1100px;
+      margin:auto;
+      padding:16px;
+    }
+
+    .card{
+      background:#111;
+      border:1px solid #222;
+      border-radius:14px;
+      padding:14px;
+      margin-bottom:12px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .badge{
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:bold;
+    }
+
+    .riskSafe{ background:#22c55e; color:#000; }
+    .riskWarn{ background:#facc15; color:#000; }
+    .riskHigh{ background:#ef4444; color:#fff; }
+
+    input, select{
+      width:100%;
+      padding:10px;
+      margin-top:6px;
+      border-radius:8px;
+      border:1px solid #222;
+      background:#0b0b0b;
+      color:#fff;
+    }
+
+    .addBtn{ margin-top:10px; background:#22c55e; color:#000; }
+
+    .expenseItem{
+      display:flex;
+      justify-content:space-between;
+      padding:10px;
+      border-bottom:1px solid #222;
+    }
+
+    @media(max-width:900px){
+      .grid{ grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <div class="title">💰 Expense Tracker</div>
+  <div>
+    <button class="btn" onclick="window.print()">📄 Export</button>
+    <button class="btn logout" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div id="root"></div>
+
+<script>
+
+async function requireLogin(){
+  const res = await fetch("../backend/auth/me.php");
+  const me = await res.json();
+
+  if(!me.loggedIn){
+    window.location.href = "login.html?next=expense.html";
+    return null;
+  }
+  return me;
+}
+
+const { useState, useEffect } = React;
+
+function App(){
+
+  const [expenses,setExpenses] = useState([]);
+  const [summary,setSummary] = useState(null);
+  const [suggest,setSuggest] = useState(null);
+
+  const [amount,setAmount] = useState("");
+  const [category,setCategory] = useState("food");
+  const [note,setNote] = useState("");
+  const [budget,setBudget] = useState(5000);
+
+  useEffect(()=>{
+    load();
+    loadSummary();
+
+    fetch("../backend/api/cheap-suggestions.php")
+      .then(r=>r.json())
+      .then(setSuggest);
+  },[]);
+
+  function load(){
+    fetch("../backend/api/expense-list.php")
+      .then(r=>r.json())
+      .then(setExpenses);
+  }
+
+  function loadSummary(){
+    fetch("../backend/api/expense-summary.php")
+      .then(r=>r.json())
+      .then(data=>{
+        setSummary(data);
+
+        setTimeout(()=>{
+          if(!data.categories) return;
+
+          const ctx = document.getElementById("chartCanvas");
+          if(!ctx) return;
+
+          const labels = data.categories.map(c=>c.category);
+          const values = data.categories.map(c=>Number(c.total));
+
+         new Chart(ctx,{
+  type:"doughnut",
+  data:{
+    labels:labels,
+    datasets:[{ data:values }]
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:true
+  }
+});
+        },300);
+      });
+  }
+
+  function addExpense(e){
+    e.preventDefault();
+
+    const fd = new FormData();
+    fd.append("amount",amount);
+    fd.append("category",category);
+    fd.append("note",note);
+
+    fetch("../backend/api/expense-add.php",{method:"POST",body:fd})
+      .then(r=>r.json())
+      .then(res=>{
+        if(res.ok){
+          setAmount(""); setNote("");
+          load(); loadSummary();
+        }
+      });
+  }
+
+  const total = expenses.reduce((a,b)=>a+Number(b.amount),0);
+
+  let risk="Safe", riskClass="riskSafe";
+  if(total > budget){ risk="High Risk"; riskClass="riskHigh"; }
+  else if(total > budget*0.8){ risk="Warning"; riskClass="riskWarn"; }
+
+  let suggestion = "You are managing well 👍";
+
+  if(total > budget){
+    suggestion = "🚨 Budget exceeded!";
+  }
+  else if(summary && summary.categories){
+    let food = summary.categories.find(c=>c.category==="food");
+    let rent = summary.categories.find(c=>c.category==="rent");
+
+    if(food && food.total > budget*0.4){
+      suggestion = "🍱 Too much food spending.";
+    }
+    else if(rent && rent.total > budget*0.5){
+      suggestion = "🏠 Rent too high.";
+    }
+  }
+
+  let trendText="";
+  if(summary){
+    let diff = total - (summary.last_total || 0);
+    trendText = diff > 0 ? "📈 Increased ₹"+diff : "📉 Reduced ₹"+Math.abs(diff);
+  }
+
+  return React.createElement("div",{className:"container"},
+
+    React.createElement("div",{className:"grid"},
+
+      React.createElement("div",{className:"card"},"Total: ₹"+total),
+
+      React.createElement("div",{className:"card"},
+        "Budget: ₹",
+        React.createElement("input",{
+          value:budget,
+          onChange:e=>setBudget(e.target.value)
+        })
+      ),
+
+      React.createElement("div",{className:"card"},
+        "Risk: ",
+        React.createElement("span",{className:"badge "+riskClass},risk)
+      )
+    ),
+
+    React.createElement("div",{className:"card"},"Trend: "+trendText),
+
+    summary ? React.createElement("div",{className:"card"},
+      React.createElement("h3",null,"📊 Category Analysis"),
+      summary.categories.map(c =>
+        React.createElement("div",null,
+          c.category+" → ₹"+c.total
+        )
+      )
+    ) : null,
+
+    React.createElement("div",{className:"card"},
+      React.createElement("h3",null,"🧠 Suggestion"),
+      suggestion
+    ),
+
+    suggest ? React.createElement("div",{className:"card"},
+      React.createElement("h3",null,"💡 Save Money"),
+      "🏠 ",suggest.pg?.name," ₹",suggest.pg?.price,
+      React.createElement("br"),
+      "🍱 ",suggest.food?.name," ₹",suggest.food?.price
+    ) : null,
+
+    React.createElement("div",{className:"card"},
+  React.createElement("h3",null,"📊 Expense Chart"),
+
+  React.createElement("div",{
+    style:{
+      maxWidth:"400px",
+      margin:"auto"
+    }
+  },
+    React.createElement("canvas",{id:"chartCanvas"})
+  )
+),
+
+    React.createElement("div",{className:"card"},
+      React.createElement("h3",null,"Add Expense"),
+      React.createElement("form",{onSubmit:addExpense},
+
+        React.createElement("input",{placeholder:"Amount",value:amount,onChange:e=>setAmount(e.target.value),required:true}),
+
+        React.createElement("select",{value:category,onChange:e=>setCategory(e.target.value)},
+          ["food","rent","travel","study","misc"].map(x=>
+            React.createElement("option",{value:x},x)
+          )
+        ),
+
+        React.createElement("input",{placeholder:"Note",value:note,onChange:e=>setNote(e.target.value)}),
+
+        React.createElement("button",{className:"addBtn btn"},"Add")
+      )
+    ),
+
+    React.createElement("div",{className:"card"},
+      React.createElement("h3",null,"Expenses"),
+      expenses.map(item=>
+        React.createElement("div",{className:"expenseItem"},
+          React.createElement("div",null,
+            "₹"+item.amount+" - "+item.category,
+            React.createElement("div",{style:{fontSize:"12px",opacity:.7}},item.note)
+          ),
+          React.createElement("div",null,item.date)
+        )
+      )
+    )
+  );
+}
+
+requireLogin().then(me=>{
+  if(!me) return;
+  ReactDOM.createRoot(document.getElementById("root"))
+    .render(React.createElement(App));
+});
+
+function logout(){
+  fetch("../backend/auth/logout.php")
+    .then(()=>window.location.href="index.html");
+}
+
+</script>
+
+</body>
+</html>

@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <title>Student Survival System (SSS)</title>
 
-  <!-- Dark UI kit (create this file if not made yet) -->
+  
   <link rel="stylesheet" href="../assets/css/ui-kit.css">
 
   <style>
-    /* If ui-kit.css not created yet, this fallback keeps it black */
+    
     body{ background:#0b0b0b; color:#fff; font-family:system-ui, Arial; margin:0; }
     .container{ max-width:1100px; margin:0 auto; padding:16px; }
     .topbar{ background:#0f0f0f; border-bottom:1px solid #222; }
@@ -185,17 +185,17 @@
     </div>
 
     <!-- Expense -->
-    <div class="mod" onclick="goStudent('#')">
+    <div class="mod" onclick="goStudent('expense.html')">
       <div class="modTop">
         <b>💰 Expense Tracker</b>
-        <span class="tag tSoon">NEXT</span>
+        <span class="tag tLive">LIVE</span>
       </div>
       <h3>Track daily/monthly expenses intelligently</h3>
       <div class="muted">
         Budget alerts, category summary, “where money went”, export report.
       </div>
       <div class="modBtns">
-        <button class="btn blue" onclick="event.stopPropagation();alert('Expense tracker will be added next');">Coming Soon</button>
+       <a class="linkBtn btn green" href="expense.html" onclick="event.stopPropagation();">Open</a>  
       </div>
     </div>
 
@@ -318,7 +318,7 @@ function quickSearch(){
   if(q.includes("dash")) return goStudent("dashboard.html");
   if(q.includes("food")) return window.location.href="food.html";
   if(q.includes("medical")) return alert("Medical module will be added next.");
-  if(q.includes("expense")) return alert("Expense module will be added next.");
+  if(q.includes("expense")) return window.location.href="expense.html";
   alert("Try: pg, complaints, dashboard, food, medical, expense");
 }
 
