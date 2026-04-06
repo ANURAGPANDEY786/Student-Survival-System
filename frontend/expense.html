@@ -96,6 +96,10 @@
 <div class="topbar">
   <div class="title">💰 Expense Tracker</div>
   <div>
+    <button onclick="resetAllData()" 
+style="background:#ef4444;color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:bold;cursor:pointer;">
+  🔄 Reset All Data
+</button>
     <button class="btn" onclick="window.print()">📄 Export</button>
     <button class="btn logout" onclick="logout()">Logout</button>
   </div>
@@ -319,6 +323,32 @@ requireLogin().then(me=>{
 function logout(){
   fetch("../backend/auth/logout.php")
     .then(()=>window.location.href="index.html");
+}
+
+function resetAllData(){
+
+  const confirmReset = confirm("⚠️ This will delete ALL your expense data. Continue?");
+
+  if(!confirmReset) return;
+
+  fetch("../backend/api/expense-reset.php", {
+    method: "POST"
+  })
+  .then(res => res.json())
+  .then(data => {
+
+    if(data.ok){
+      alert("✅ Data reset successful");
+      window.location.reload();
+    } else {
+      alert("❌ Reset failed");
+    }
+
+  })
+  .catch(()=>{
+    alert("❌ Server error");
+  });
+
 }
 
 </script>

@@ -135,7 +135,15 @@ function PGPage() {
           key: item.id,
           className: "status-card pg",
           style: { cursor: "pointer" },
-          onClick: () => window.location.href = "pg-detail.html?id=" + item.id
+          onClick: () => {
+  // ✅ Save PG location
+  localStorage.setItem("pg_lat", item.lat);
+  localStorage.setItem("pg_lng", item.lng);
+  localStorage.setItem("pg_name", item.name);
+
+  // 👉 go to detail page
+  window.location.href = "pg-detail.html?id=" + item.id;
+}
         },
 
         // PHOTO (optional)

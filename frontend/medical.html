@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Medical Support</title>
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+<!-- 🗺️ Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+body{ background:#0b0b0b; color:#fff; margin:0; font-family:Arial; }
+
+.topbar{
+  position:sticky; top:0;
+  background:#0f0f0f;
+  padding:12px;
+  display:flex;
+  justify-content:space-between;
+  border-bottom:1px solid #222;
+}
+
+.container{ max-width:1000px; margin:auto; padding:16px; }
+
+.card{
+  background:#111;
+  border:1px solid #222;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:12px;
+}
+
+.badge{
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.open{ background:#22c55e; color:#000; }
+.closed{ background:#ef4444; }
+
+.btn{
+  padding:8px 12px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  margin-top:8px;
+}
+
+.call{ background:#22c55e; color:#000; }
+.map{ background:#3b82f6; color:#fff; }
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <b>🏥 Medical Support</b>
+  <button onclick="logout()" style="background:#ef4444;color:#fff;border:none;padding:8px 12px;border-radius:8px;">Logout</button>
+</div>
+
+<div id="root"></div>
+
+<script>
+
+async function requireLogin(){
+  const res = await fetch("../backend/auth/me.php");
+  const me = await res.json();
+
+  if(!me.loggedIn){
+    window.location.href = "login.html?next=medical.html";
+    return null;
+  }
+  return me;
+}
+
+const {useState,useEffect} = React;
+
+function App(){
+
+  const [list,setList] = useState([]);
+  const [userLocation,setUserLocation] = useState(null);
+  // 🧠 BEST HOSPITAL LOGIC (ADD HERE)
+function getBestHospital(){
+  if(list.length===0) return null;
+
+  return list.reduce((best,cur)=>{
+    const curScore = (Number(cur.rating)||0) - (Number(cur.distance)||0);
+    const bestScore = (Number(best.rating)||0) - (Number(best.distance)||0);
+    return curScore > bestScore ? cur : best;
+  },list[0]);
+}
+
+const best = getBestHospital();
+
+  <!-- 🔥 REPLACE ONLY YOUR useEffect PART WITH THIS -->
+
+useEffect(()=>{
+
+  const pgLat = localStorage.getItem("pg_lat");
+  const pgLng = localStorage.getItem("pg_lng");
+
+  function loadMap(data, lat, lng){
+
+    setTimeout(()=>{
+
+      if(window.myMap){
+        window.myMap.remove();
+      }
+
+      if(!window.L) return;
+
+      lat = Number(lat);
+      lng = Number(lng);
+
+      // ✅ FIX: prevent NaN crash
+      if(isNaN(lat) || isNaN(lng)){
+        console.error("❌ Invalid USER location:", lat, lng);
+        return;
+      }
+
+      window.myMap = L.map("map").setView([lat,lng],13);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+        attribution:"© OpenStreetMap"
+      }).addTo(window.myMap);
+
+      // 📍 USER MARKER
+      L.marker([lat,lng]).addTo(window.myMap)
+        .bindPopup("📍 You are here").openPopup();
+
+      // 🏥 HOSPITALS
+      data.forEach(item => {
+
+        const hLat = Number(item.lat || item.latitude);
+        const hLng = Number(item.lng || item.longitude);
+
+        if(!isNaN(hLat) && !isNaN(hLng)){
+          L.marker([hLat, hLng]).addTo(window.myMap)
+            .bindPopup("🏥 " + item.name);
+        } else {
+          console.warn("❌ Skipping invalid hospital:", item);
+        }
+
+      });
+
+    },500);
+  }
+
+  function loadFallback(){
+    const lat = 26.8467; // college fallback
+    const lng = 80.9462;
+
+    fetch("../backend/api/medical-list.php")
+      .then(r=>r.json())
+      .then(data=>{
+        setList(data);
+        loadMap(data, lat, lng);
+      });
+  }
+
+  // 🥇 PG LOCATION
+  if(pgLat && pgLng && !isNaN(pgLat) && !isNaN(pgLng)){
+    fetch("../backend/api/medical-list.php?lat="+pgLat+"&lng="+pgLng)
+      .then(r=>r.json())
+      .then(data=>{
+        setList(data);
+        loadMap(data, pgLat, pgLng);
+      });
+    return;
+  }
+
+  // 🥈 LIVE LOCATION
+  navigator.geolocation.getCurrentPosition(
+    (pos)=>{
+      const lat = Number(pos.coords.latitude);
+      const lng = Number(pos.coords.longitude);
+
+      if(isNaN(lat) || isNaN(lng)){
+        console.log("❌ Invalid GPS → fallback");
+        loadFallback();
+        return;
+      }
+
+      setUserLocation({lat,lng});
+
+      fetch("../backend/api/medical-list.php?lat="+lat+"&lng="+lng)
+        .then(r=>r.json())
+        .then(data=>{
+          setList(data);
+          loadMap(data, lat, lng);
+        });
+    },
+    ()=>{
+      console.log("❌ Location denied → fallback");
+      loadFallback();
+    }
+  );
+
+},[]);
+
+  const pgName = localStorage.getItem("pg_name");
+
+  return React.createElement("div",{className:"container"},
+
+    React.createElement("h2",null,"Nearby Medical Help"),
+
+    // 🧠 BEST HOSPITAL UI (ADD HERE)
+best ?
+React.createElement("div",{className:"card", style:{border:"2px solid #3b82f6"}},
+  React.createElement("h3",null,"🧠 Recommended Hospital"),
+  React.createElement("div",null,best.name),
+  React.createElement("div",null,
+    "⭐ ",best.rating," | ",
+    Number(best.distance).toFixed(2)," km"
+  )
+)
+: null,
+
+    // 🗺️ MAP
+    React.createElement("div",{
+      id:"map",
+      style:{height:"300px",borderRadius:"12px",marginBottom:"12px"}
+    }),
+
+    // 📍 LOCATION INFO
+    pgName ?
+    React.createElement("div",{className:"card"},
+      "📍 Near your PG: " + pgName
+    )
+    :
+    userLocation ?
+    React.createElement("div",{className:"card"},
+      "📍 Using your current location"
+    )
+    :
+    React.createElement("div",{className:"card"},
+      "📍 Using college location"
+    ),
+
+    // 🚨 SOS
+    React.createElement("div",{className:"card", style:{border:"2px solid red"}},
+      React.createElement("h3",{style:{color:"#ef4444"}},"🚨 Emergency Help"),
+      React.createElement("button",{
+        style:{
+          width:"100%",
+          padding:"14px",
+          fontSize:"16px",
+          background:"#ef4444",
+          color:"#fff",
+          border:"none",
+          borderRadius:"10px"
+        },
+        onClick: ()=>{
+          if(list.length>0){
+            window.location.href="tel:"+list[0].phone;
+          }
+        }
+      },"🚑 Call Nearest Hospital")
+    ),
+
+    // ⚠️ ALERT
+    (list.length>0 && Number(list[0].distance)>3) ?
+    React.createElement("div",{className:"card"},
+      "⚠️ Nearest hospital is far ("+Number(list[0].distance).toFixed(2)+" km)"
+    )
+    : null,
+
+    // 📋 LIST
+    list.map((item,index)=>
+
+      React.createElement("div",{
+        className:"card",
+        key:item.id,
+        style:index===0 ? {border:"2px solid #22c55e"} : {}
+      },
+
+        React.createElement("div",null,
+          item.name,
+          index===0 ?
+          React.createElement("span",{className:"badge open",style:{marginLeft:"8px"}},"Nearest")
+          : null
+        ),
+
+        React.createElement("div",null,
+          item.type," | ",
+          React.createElement("b",null,Number(item.distance).toFixed(2)+" km away")
+        ),
+
+        React.createElement("div",null,"⭐ ",item.rating),
+        // 📊 PRIORITY TAG (ADD HERE)
+React.createElement("div",{style:{marginTop:"6px",fontWeight:"bold"}},
+
+  Number(item.distance) < 2 ?
+  "🟢 Immediate Reach"
+  :
+  Number(item.distance) < 5 ?
+  "🟡 Moderate Distance"
+  :
+  "🔴 Far - Risky"
+),
+        React.createElement("div",null,"📍 ",item.address),
+
+        React.createElement("div",null,
+          "⏰ ",
+          React.createElement("span",
+            {className:"badge "+(item.open24==="yes"?"open":"closed")},
+            item.open24==="yes"?"24/7":"Closed"
+          )
+        ),
+
+        React.createElement("a",{href:"tel:"+item.phone},
+          React.createElement("button",{className:"btn call"},"📞 Call")
+        ),
+
+        React.createElement("a",{
+          href:"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(item.address),
+          target:"_blank"
+        },
+          React.createElement("button",{className:"btn map"},"🗺 Map")
+        )
+
+      )
+    )
+  );
+}
+
+requireLogin().then(me=>{
+  if(!me) return;
+  ReactDOM.createRoot(document.getElementById("root"))
+    .render(React.createElement(App));
+});
+
+function logout(){
+  fetch("../backend/auth/logout.php")
+    .then(()=>window.location.href="index.html");
+}
+
+</script>
+
+</body>
+</html>

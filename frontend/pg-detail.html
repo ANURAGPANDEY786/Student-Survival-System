@@ -7,34 +7,189 @@
   <link rel="stylesheet" href="../assets/css/dashboard.css">
 
   <style>
-    .pill { padding:4px 10px; border-radius:999px; font-weight:bold; font-size:12px; }
-    .pending { background:#334155; color:#fff; }
-    .warning { background:#facc15; color:#000; }
-    .critical { background:#ef4444; color:#fff; }
+   body{
+  margin:0;
+  padding:0;
+  background:#0f172a;
+  color:white;
+  font-family: Arial, sans-serif;
+}
 
-    .riskSafe { background:#22c55e; color:#000; }
-    .riskWarn { background:#facc15; color:#000; }
-    .riskHigh { background:#ef4444; color:#fff; }
+/* TOP BAR */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 14px;
+}
 
-    .sectionBtn{
-      width:100%;
-      text-align:left;
-      padding:12px;
-      margin-top:12px;
-      border-radius:10px;
-      background:#111;
-      color:#fff;
-      border:1px solid #222;
-      cursor:pointer;
-      font-weight:bold;
-    }
-    .sectionBox{
-      margin-top:10px;
-      padding:12px;
-      border-radius:12px;
-      background:#1a1a1a;
-      border:1px solid #222;
-    }
+/* MAIN CONTAINER */
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
+}
+
+/* CARD */
+.card{
+  background:#111827;
+  border-radius:14px;
+  padding:20px;
+  border:1px solid #1f2937;
+  box-shadow:0 4px 10px rgba(0,0,0,0.4);
+}
+
+/* FLEX LAYOUT */
+.flex{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+}
+
+.left{
+  flex:1.2;
+  min-width:300px;
+}
+
+.right{
+  flex:1;
+  min-width:260px;
+}
+
+/* IMAGE */
+.main-img{
+  width:100%;
+  height:260px;
+  object-fit:cover;
+  border-radius:12px;
+}
+
+/* INFO ROW */
+.info-row{
+  display:flex;
+  justify-content:space-between;
+  margin:10px 0;
+  border-bottom:1px solid #1f2937;
+  padding-bottom:6px;
+}
+
+/* BUTTONS */
+.btn{
+  padding:10px 14px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.2s;
+}
+
+.btn:hover{
+  opacity:0.85;
+}
+
+.primary{ background:#22c55e; color:white; }
+.blue{ background:#3b82f6; color:white; }
+.red{ background:#ef4444; color:white; }
+
+/* TABS */
+.tabs{
+  display:flex;
+  gap:20px;
+  margin-top:20px;
+  border-bottom:1px solid #1f2937;
+}
+
+.tab{
+  padding:10px;
+  cursor:pointer;
+  font-weight:bold;
+  opacity:0.7;
+}
+
+.tab:hover{
+  opacity:1;
+}
+
+.active{
+  color:#22c55e;
+  border-bottom:3px solid #22c55e;
+  opacity:1;
+}
+
+/* BADGES */
+.pill{
+  padding:4px 10px;
+  border-radius:999px;
+  font-weight:bold;
+  font-size:12px;
+}
+
+.pending{ background:#334155; color:#fff; }
+.warning{ background:#facc15; color:#000; }
+.critical{ background:#ef4444; color:#fff; }
+
+.riskSafe{ background:#22c55e; color:#000; }
+.riskWarn{ background:#facc15; color:#000; }
+.riskHigh{ background:#ef4444; color:#fff; }
+
+/* COLLAPSIBLE */
+.sectionBtn{
+  width:100%;
+  text-align:left;
+  padding:12px;
+  margin-top:12px;
+  border-radius:10px;
+  background:#111827;
+  color:#fff;
+  border:1px solid #1f2937;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.sectionBox{
+  margin-top:10px;
+  padding:12px;
+  border-radius:12px;
+  background:#020617;
+  border:1px solid #1f2937;
+}
+
+/* FORM INPUTS */
+input, select, textarea{
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:8px;
+  border:none;
+  outline:none;
+  background:#020617;
+  color:white;
+  border:1px solid #1f2937;
+}
+
+input::placeholder, textarea::placeholder{
+  color:#94a3b8;
+}
+
+/* REVIEW / COMPLAINT CARDS */
+.review-card{
+  margin-bottom:10px;
+  padding:10px;
+  background:#020617;
+  border-radius:10px;
+  border:1px solid #1f2937;
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .flex{
+    flex-direction:column;
+  }
+
+  .main-img{
+    height:200px;
+  }
+}
   </style>
 
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -346,12 +501,13 @@ function PGComplaints({ pgId }) {
 
 function PGDetail() {
   const [pg, setPg] = useState(null);
-  const [risk, setRisk] = useState(null); // ✅ correct place
+  const [risk, setRisk] = useState(null);
+  const [tab, setTab] = useState("details");
 
   useEffect(() => {
     fetch("../backend/api/pg-detail.php?id=" + pgId)
       .then(res => res.json())
-      .then(data => setPg(data));
+      .then(setPg);
 
     fetch("../backend/api/pg-list-risk.php")
       .then(res => res.json())
@@ -363,94 +519,96 @@ function PGDetail() {
 
   if (!pg) return React.createElement("h3", null, "Loading...");
 
-  return React.createElement(
-    "div",
-    { className: "dashboard-container" },
+  return React.createElement("div", { className:"container" },
 
-    React.createElement(
-      "h2",
-      null,
-      pg.name,
-      risk ? React.createElement(
-        "span",
-        {
-          className: "badge " + (risk.risk_level === "High Risk" ? "riskHigh" :
-                                 risk.risk_level === "Warning" ? "riskWarn" : "riskSafe"),
-          style: { marginLeft: "10px" }
-        },
-        risk.risk_level
-      ) : null
-    ),
+    React.createElement("div", { className:"card" },
 
-    pg.photo ? React.createElement("img", {
-      src: "../uploads/pg/" + pg.photo,
-      style: {
-        width: "100%",
-        height: "220px",
-        objectFit: "cover",
-        borderRadius: "12px",
-        marginBottom: "15px"
-      }
-    }) : null,
+      // TOP SECTION
+      React.createElement("div", { className:"flex" },
 
-    React.createElement(
-      "div",
-      { className: "status-card pg" },
+        // LEFT IMAGE
+        React.createElement("div", { className:"left" },
+          pg.photo && React.createElement("img", {
+            src:"../uploads/pg/" + pg.photo,
+            className:"main-img"
+          })
+        ),
 
-      React.createElement("p", null, "💰 Price: ₹" + pg.price),
-      React.createElement("p", null, "📍 Distance: " + pg.distance + " km"),
-      React.createElement("p", null, "🏠 Type: " + pg.type),
+        // RIGHT DETAILS
+        React.createElement("div", { className:"right" },
 
-      React.createElement(
-        "p",
-        null,
-        "📞 Contact: ",
-        React.createElement(
-          "a",
-          { href: "tel:" + pg.phone, style: { color: "#22c55e", textDecoration:"none" } },
-          pg.phone
+          React.createElement("h2", null,
+            pg.name,
+            risk && React.createElement("span", {
+              style:{
+                marginLeft:"10px",
+                padding:"4px 10px",
+                borderRadius:"20px",
+                background: risk.risk_level==="High Risk" ? "#ef4444" :
+                           risk.risk_level==="Warning" ? "#facc15" : "#22c55e",
+                color:"#000",
+                fontSize:"12px"
+              }
+            }, risk.risk_level)
+          ),
+
+          React.createElement("p", null, "📍 " + pg.address),
+
+          React.createElement("div", { className:"info-row" },
+            React.createElement("span", null, "Price"),
+            React.createElement("b", null, "₹" + pg.price)
+          ),
+
+          React.createElement("div", { className:"info-row" },
+            React.createElement("span", null, "Distance"),
+            React.createElement("b", null, pg.distance + " km")
+          ),
+
+          React.createElement("div", { className:"info-row" },
+            React.createElement("span", null, "Type"),
+            React.createElement("b", null, pg.type)
+          ),
+
+          React.createElement("button", {
+            className:"btn primary",
+            onClick:()=>window.location.href="tel:"+pg.phone
+          }, "📞 Contact Owner"),
+
+          React.createElement("br"),
+          React.createElement("br"),
+
+          React.createElement("a", {
+            href:"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(pg.address),
+            target:"_blank",
+            className:"btn blue"
+          }, "View on Map")
         )
       ),
 
-      React.createElement(
-        "a",
-        {
-          href:
-            "https://www.google.com/maps/search/?api=1&query=" +
-            encodeURIComponent(pg.address),
-          target: "_blank",
-          style: {
-            display: "inline-block",
-            marginTop: "10px",
-            padding: "10px",
-            background: "#3b82f6",
-            color: "white",
-            borderRadius: "8px",
-            textDecoration: "none"
-          }
-        },
-        "🗺 Open in Google Maps"
-      )
-    ),
+      // TABS
+      React.createElement("div", { className:"tabs" },
+        ["details","reviews","complaints"].map(t =>
+          React.createElement("div", {
+            key:t,
+            className:"tab " + (tab===t ? "active":""),
+            onClick:()=>setTab(t)
+          }, t.toUpperCase())
+        )
+      ),
 
-    React.createElement(
-      CollapsibleSection,
-      { title: "⭐ Reviews", defaultOpen: true },
-      React.createElement(ReviewSection, { pgId: pgId })
-    ),
+      // TAB CONTENT
+      React.createElement("div", { style:{ marginTop:"20px" } },
 
-    React.createElement(
-      CollapsibleSection,
-      { title: "🚨 PG Complaints" },
-      React.createElement(PGComplaints, { pgId: pgId })
-    ),
+        tab==="details" && React.createElement("div", null,
+          React.createElement("p", null, "✅ Facilities: " + (pg.facilities || "Not added")),
+          React.createElement("p", null, "📜 Rules: " + (pg.rules || "Not added"))
+        ),
 
-    React.createElement(
-      CollapsibleSection,
-      { title: "📌 Facilities & Rules" },
-      React.createElement("div", null,
-        React.createElement("p", null, "✅ Facilities: " + (pg.facilities || "Not added")),
-        React.createElement("p", null, "📜 Rules: " + (pg.rules || "Not added"))
+        tab==="reviews" &&
+          React.createElement(ReviewSection, { pgId }),
+
+        tab==="complaints" &&
+          React.createElement(PGComplaints, { pgId })
       )
     )
   );

@@ -8,6 +8,40 @@
   <link rel="stylesheet" href="../assets/css/ui-kit.css">
 
   <style>
+
+    /* ===== STICKY HEADER ===== */
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* ===== STICKY MENU ===== */
+.menu{
+  position: sticky;
+  top: 60px; /* adjust if needed */
+  z-index: 999;
+}
+
+/* ===== FOOTER FIX ===== */
+body{
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.container{
+  flex: 1;
+}
+
+/* ===== STICKY FOOTER ===== */
+.foot{
+  position: sticky;
+  bottom: 0;
+  background:#0f0f0f;
+  border-top:1px solid #222;
+  padding:12px;
+}
     
     body{ background:#0b0b0b; color:#fff; font-family:system-ui, Arial; margin:0; }
     .container{ max-width:1100px; margin:0 auto; padding:16px; }
@@ -50,11 +84,200 @@
     .foot{ margin-top:22px; opacity:.75; font-size:13px; text-align:center; padding-bottom:20px; }
     @media(max-width:900px){ .heroGrid{ grid-template-columns:1fr; } .grid{ grid-template-columns:1fr; } .featureRow{ grid-template-columns:1fr 1fr; } }
     @media(max-width:520px){ .featureRow{ grid-template-columns:1fr; } }
+
+    /* 🔥 SPLASH FULL SCREEN */
+#splash{
+  position:fixed;
+  top:0; left:0;
+  width:100%;
+  height:100vh;
+  background:linear-gradient(180deg,#0b0b0b,#000);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:99999;
+  transition:opacity 1s ease, visibility 1s;
+}
+
+.splash-box{
+  text-align:center;
+  animation:fadeIn 1.5s ease;
+}
+
+/* 🛟 LOGO ANIMATION */
+.logo{
+  font-size:60px;
+  animation:logoPop 1.5s ease;
+}
+
+@keyframes logoPop{
+  0%{ transform:scale(0.5); opacity:0; }
+  60%{ transform:scale(1.2); }
+  100%{ transform:scale(1); opacity:1; }
+}
+
+.splash-box h1{
+  margin:10px 0 5px;
+}
+
+.splash-box p{
+  opacity:0.7;
+}
+
+/* 📊 PROGRESS BAR */
+.progress{
+  width:200px;
+  height:6px;
+  background:#222;
+  border-radius:10px;
+  margin:20px auto;
+  overflow:hidden;
+}
+
+#bar{
+  width:0%;
+  height:100%;
+  background:#3b82f6;
+  transition:width 0.2s;
+}
+
+/* FADE OUT */
+.hide{
+  opacity:0;
+  visibility:hidden;
+}
+
+/* TEXT FADE */
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+/* ===== AI UI ===== */
+#aiContainer{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  z-index:999;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+}
+
+#aiBtn{
+  padding:12px 18px;
+  border-radius:30px;
+  background:#0f172a;
+  color:#22c55e;
+  border:2px solid #22c55e;
+  font-weight:bold;
+  cursor:pointer;
+
+  box-shadow:
+    0 0 5px #22c55e,
+    0 0 10px #22c55e,
+    0 0 20px #22c55e;
+
+  transition:0.3s;
+  animation: floatLR 4s infinite ease-in-out;
+}
+
+#aiBtn:hover{
+  transform:scale(1.1);
+  box-shadow:
+    0 0 10px #22c55e,
+    0 0 20px #22c55e,
+    0 0 40px #22c55e;
+}
+
+#aiBox{
+  width:300px;
+  background:#020617;
+  border:1px solid #1f2937;
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:10px;
+  display:none;
+  flex-direction:column;
+}
+
+#chatArea{
+  height:200px;
+  overflow:auto;
+  font-size:14px;
+  margin-bottom:8px;
+}
+
+#aiInput{
+  width:100%;
+  padding:8px;
+  border-radius:8px;
+  border:none;
+  margin-bottom:6px;
+  background:#111827;
+  color:white;
+}
+
+#aiBox button{
+  width:100%;
+  padding:8px;
+  border:none;
+  border-radius:8px;
+  background:#22c55e;
+  cursor:pointer;
+}
+
+@keyframes floatLR{
+  0% { transform: translateX(0px); }
+  50% { transform: translateX(-10px); }
+  100% { transform: translateX(0px); }
+}
+
+/* CHAT BUBBLES */
+.msg{
+  padding:8px 10px;
+  border-radius:10px;
+  margin-bottom:6px;
+  max-width:80%;
+}
+
+.user{
+  background:#22c55e;
+  color:#000;
+  align-self:flex-end;
+}
+
+.bot{
+  background:#1f2937;
+  color:#fff;
+  align-self:flex-start;
+}
   </style>
 
 </head>
 
 <body>
+
+  <!-- 🔥 ULTRA SPLASH SCREEN -->
+<div id="splash">
+  <div class="splash-box">
+
+    <!-- LOGO -->
+    <div class="logo">🛟</div>
+
+    <h1>Student Survival System</h1>
+    <p>Smart life companion for students</p>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress">
+      <div id="bar"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 🔊 SOUND -->
+<audio id="introSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8b1c9a9f2.mp3?filename=interface-124464.mp3"></audio>
 
 <!-- TOP BAR -->
 <div class="topbar">
@@ -170,17 +393,17 @@
     </div>
 
     <!-- Medical -->
-    <div class="mod" onclick="goStudent('#')">
+    <div class="mod" onclick="goStudent('medical.html')">
       <div class="modTop">
         <b>🏥 Medical</b>
-        <span class="tag tSoon">NEXT</span>
+        <span class="tag tLive">LIVE</span>
       </div>
       <h3>Emergency help & nearby medical support</h3>
       <div class="muted">
         Hospital/pharmacy list, SOS info, student feedback, quick call buttons.
       </div>
       <div class="modBtns">
-        <button class="btn blue" onclick="event.stopPropagation();alert('Medical module will be added next');">Coming Soon</button>
+        <a class="linkBtn btn green" href="medical.html" onclick="event.stopPropagation();">Open</a>
       </div>
     </div>
 
@@ -317,13 +540,221 @@ function quickSearch(){
   if(q.includes("pg")) return goStudent("pg.html");
   if(q.includes("dash")) return goStudent("dashboard.html");
   if(q.includes("food")) return window.location.href="food.html";
-  if(q.includes("medical")) return alert("Medical module will be added next.");
+  if(q.includes("medical")) return window.location.href="medical.html";
   if(q.includes("expense")) return window.location.href="expense.html";
   alert("Try: pg, complaints, dashboard, food, medical, expense");
 }
 
  initStudentAuth();
-</script>
 
+ // 🔥 SPLASH LOGIC
+window.addEventListener("load", ()=>{
+
+  const bar = document.getElementById("bar");
+  const splash = document.getElementById("splash");
+  const sound = document.getElementById("introSound");
+
+  let progress = 0;
+
+  // 🔊 play sound (only once)
+  setTimeout(()=>{
+    sound.play().catch(()=>{});
+  },300);
+
+  // 📊 progress animation
+  const interval = setInterval(()=>{
+    progress += Math.random()*20;
+
+    if(progress >= 100){
+      progress = 100;
+      clearInterval(interval);
+
+      // hide splash
+      setTimeout(()=>{
+        splash.classList.add("hide");
+      },400);
+    }
+
+    bar.style.width = progress + "%";
+
+  },400);
+
+});
+
+
+</script>
+<script>
+function toggleAI(){
+  const box = document.getElementById("aiBox");
+  box.style.display = box.style.display==="none" ? "block" : "none";
+}
+
+function addMsg(text, isUser=false){
+  const div = document.createElement("div");
+  div.style.marginBottom="6px";
+  div.innerHTML = isUser ? "🧑 "+text : "🤖 "+text;
+  document.getElementById("chatArea").appendChild(div);
+}
+
+
+async function sendAI(){
+  const input = document.getElementById("aiInput");
+  const msg = input.value.trim();
+  if(!msg) return;
+
+  addMsg(msg, true);
+  input.value="";
+
+  try{
+    const res = await fetch("../backend/api/ai-chat.php", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ message: msg })
+    });
+
+    const data = await res.json();
+
+    const reply =
+      data.choices?.[0]?.message?.content || "No response";
+
+    addMsg(reply);
+
+  }catch(err){
+    addMsg("❌ AI not working");
+  }
+}
+
+</script>
+<script>
+function addMsg(text, isUser=false){
+  const div = document.createElement("div");
+  div.style.marginBottom="8px";
+  div.innerHTML = isUser ? "🧑 " + text : "🤖 " + text;
+  document.getElementById("chatArea").appendChild(div);
+  div.scrollIntoView();
+}
+
+function analyzeIntent(msg){
+  msg = msg.toLowerCase();
+
+  return {
+    project: msg.includes("project") || msg.includes("sss"),
+    pg: msg.includes("pg") || msg.includes("hostel"),
+    complaint: msg.includes("complaint") || msg.includes("issue"),
+    review: msg.includes("review") || msg.includes("rating"),
+    medical: msg.includes("medical") || msg.includes("hospital"),
+    food: msg.includes("food") || msg.includes("mess"),
+    tech: msg.includes("tech") || msg.includes("technology"),
+    benefit: msg.includes("benefit") || msg.includes("why"),
+    working: msg.includes("how") || msg.includes("working"),
+    emergency: msg.includes("emergency") || msg.includes("urgent")
+  };
+}
+
+function smartReply(msg){
+  const intent = analyzeIntent(msg);
+  let reply = "";
+
+  if(msg.includes("full explain")){
+  return "SSS is a complete platform helping students with PG, food, and medical. It uses React, PHP, MySQL and includes smart features like complaint verification and risk detection.";
+}
+
+  // 🧠 PROJECT OVERVIEW
+  if(intent.project){
+    reply += "📌 *Student Survival System (SSS)* helps students manage daily survival in a new city.\n";
+  }
+
+  // 🏠 PG
+  if(intent.pg){
+    reply += "🏠 PG Module:\n- Find PG by price & distance\n- View reviews & complaints\n- Risk analysis (Safe / Warning / High Risk)\n\n";
+  }
+
+  // 🚨 COMPLAINT
+  if(intent.complaint){
+    reply += "🚨 Complaint System:\n- Students report issues (water, food, etc.)\n- Others confirm complaints\n- Severity increases automatically\n\n";
+  }
+
+  // ⭐ REVIEW
+  if(intent.review){
+    reply += "⭐ Review System:\n- Ratings (1–5)\n- Issue tagging\n- Helps students choose better PG\n\n";
+  }
+
+  // 🏥 MEDICAL
+  if(intent.medical){
+    reply += "🏥 Medical Support:\n- Shows nearest hospitals\n- Distance calculation\n- Emergency call feature\n\n";
+  }
+
+  // 🍱 FOOD
+  if(intent.food){
+    reply += "🍱 Food Module:\n- Find mess/tiffin services\n- Affordable food options\n\n";
+  }
+
+  // ⚙️ TECH
+  if(intent.tech){
+    reply += "⚙️ Tech Stack:\n- React (Frontend)\n- PHP (Backend)\n- MySQL (Database)\n- Leaflet (Maps)\n\n";
+  }
+
+  // 🎯 BENEFITS
+  if(intent.benefit){
+    reply += "🎯 Benefits:\n- All-in-one student solution\n- Saves time & money\n- Improves safety\n\n";
+  }
+
+  // 🚑 EMERGENCY
+  if(intent.emergency){
+    reply += "🚑 Emergency:\n- One-click call to nearest hospital\n- Fast response system\n\n";
+  }
+
+  // ❓ DEFAULT
+  if(reply === ""){
+    reply = "🤖 I can explain your project, PG system, medical help, complaints, or tech stack. Try asking:\n- How PG system works?\n- Explain project\n- What is tech stack?";
+  }
+
+  // 🤝 FOLLOW-UP
+  reply += "\n👉 Want me to explain any module in detail?";
+
+  return reply;
+}
+
+function sendAI(){
+  const input = document.getElementById("aiInput");
+  const msg = input.value.trim();
+  if(!msg) return;
+
+  addMsg(msg, true);
+  input.value="";
+
+  // ⏳ thinking effect
+  const thinking = document.createElement("div");
+  thinking.innerHTML = "🤖 Thinking...";
+  thinking.id = "thinking";
+  document.getElementById("chatArea").appendChild(thinking);
+
+  setTimeout(()=>{
+    thinking.remove();
+
+    const reply = smartReply(msg);
+    addMsg(reply);
+
+  }, 600);
+}
+</script>
+<!-- 🤖 AI CONTAINER -->
+<div id="aiContainer">
+
+  <!-- CHAT BOX -->
+  <div id="aiBox">
+    <div style="font-weight:bold;margin-bottom:8px;">🤖 Ask Me</div>
+
+    <div id="chatArea"></div>
+
+    <input id="aiInput" placeholder="Ask about project..." />
+
+    <button onclick="sendAI()">Send</button>
+  </div>
+
+  <!-- BUTTON -->
+  <div id="aiBtn" onclick="toggleAI()">🤖 Ask Me</div>
+
+</div>
 </body>
 </html>

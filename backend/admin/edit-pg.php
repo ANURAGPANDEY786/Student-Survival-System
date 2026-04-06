@@ -35,7 +35,7 @@ if(!$pg) die("PG not found");
     <img src="../../uploads/pg/<?php echo htmlspecialchars($pg["photo"]); ?>" alt="photo">
   <?php } ?>
 
-  <form action="../api/admin-update-pg.php" method="POST" enctype="multipart/form-data">
+  <form action="./admin-uupdate-pg.php" method="POST" enctype="multipart/form-data">
     <input type="hidden" name="id" value="<?php echo $pg["id"]; ?>">
 
     <input name="name" value="<?php echo htmlspecialchars($pg["name"]); ?>" placeholder="PG Name" required>

@@ -88,19 +88,20 @@ require_once "auth.php";
   </div>
 </a>
     
-
-    <div class="mod" onclick="alert('Medical module admin will be added next');">
+    <a href="add-medical.php">
+    <div class="mod" ">
       <div style="display:flex;justify-content:space-between;align-items:center;">
-        <b>🏥 Medical Admin</b><span class="tag soon">NEXT</span>
+        <b>🏥 Medical Admin</b><span class="tag live">LIVE</span>
       </div>
       <div style="opacity:.85;margin-top:8px;">Manage hospitals, pharmacies, emergency contacts.</div>
     </div>
+</a>
 
     <div class="mod" onclick="alert('Expense module admin will be added next');">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <b>💰 Expense Admin</b><span class="tag soon">NEXT</span>
       </div>
-      <div style="opacity:.85;margin-top:8px;">Manage categories, limits, reports (optional).</div>
+      <div style="opacity:.85;margin-top:8px;">Manage categories, limits, reports.</div>
     </div>
 
   </div>
