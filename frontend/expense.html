@@ -7,7 +7,9 @@
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<meta http-equiv="Cache-Control" content="no-store" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
   <style>
     body{ background:#0b0b0b; color:#fff; margin:0; font-family:Arial; }
 
@@ -109,17 +111,30 @@ style="background:#ef4444;color:#fff;border:none;padding:10px 14px;border-radius
 
 <script>
 
-async function requireLogin(){
-  const res = await fetch("../backend/auth/me.php");
-  const me = await res.json();
-
-  if(!me.loggedIn){
-    window.location.href = "login.html?next=expense.html";
-    return null;
+  window.addEventListener("pageshow", function(event) {
+  if (event.persisted) {
+    // reload page if coming from back cache
+    window.location.reload();
   }
-  return me;
+});
+
+async function checkAuth(){
+  try{
+    const res = await fetch("../backend/auth/me.php", { cache: "no-store" });
+    const me = await res.json();
+
+    if(!me.loggedIn){
+      // ❌ Not logged in → force login
+      window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname);
+    }
+
+  }catch(e){
+    window.location.href = "login.html";
+  }
 }
 
+// run immediately
+checkAuth();
 const { useState, useEffect } = React;
 
 function App(){

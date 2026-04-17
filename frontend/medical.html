@@ -4,13 +4,17 @@
 <meta charset="UTF-8">
 <title>Medical Support</title>
 
+
+
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
 <!-- 🗺️ Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
+<meta http-equiv="Cache-Control" content="no-store" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 <style>
 body{ background:#0b0b0b; color:#fff; margin:0; font-family:Arial; }
 
@@ -67,16 +71,31 @@ body{ background:#0b0b0b; color:#fff; margin:0; font-family:Arial; }
 
 <script>
 
-async function requireLogin(){
-  const res = await fetch("../backend/auth/me.php");
-  const me = await res.json();
+  async function checkAuth(){
+  try{
+    const res = await fetch("../backend/auth/me.php", { cache: "no-store" });
+    const me = await res.json();
 
-  if(!me.loggedIn){
-    window.location.href = "login.html?next=medical.html";
-    return null;
+    if(!me.loggedIn){
+      // ❌ Not logged in → force login
+      window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname);
+    }
+
+  }catch(e){
+    window.location.href = "login.html";
   }
-  return me;
 }
+
+// run immediately
+checkAuth();
+
+window.addEventListener("pageshow", function(event) {
+  if (event.persisted) {
+    // reload page if coming from back cache
+    window.location.reload();
+  }
+});
+
 
 const {useState,useEffect} = React;
 
