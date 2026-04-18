@@ -46,7 +46,7 @@ Students can:
 
 ---
 ## 🌐 Live Demo
-https://studentbuddy.free.nf
+https://StudentBuddy.free.nf
 ---
 
 ## 🛠 Technology Stack
