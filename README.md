@@ -45,6 +45,9 @@ Students can:
 - Rate accommodation quality
 
 ---
+## 🌐 Live Demo
+https://studentbuddy.free.nf
+---
 
 ## 🛠 Technology Stack
 
@@ -103,9 +106,11 @@ Mini Project – Student Survival System
 ---
 ## Contributors
 - Anurag Pandey - PG/Rooms Module
-- Vineet Kumar - Medical Module    -Jitendra patel-expense Module
+- Vineet Kumar - Medical Module
+- Jitendra patel-Expense Module
 - Mohammad Asgar - Food Module
+---
+## 📜 License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 📄 License
-
-This project is developed for academic and educational purposes.
+© 2026 Anurag Pandey
