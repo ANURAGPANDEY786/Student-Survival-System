@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Expense Tracker</title>
 
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -120,21 +121,27 @@ style="background:#ef4444;color:#fff;border:none;padding:10px 14px;border-radius
 
 async function checkAuth(){
   try{
-    const res = await fetch("../backend/auth/me.php", { cache: "no-store" });
+    const res = await fetch("../backend/auth/me.php", {
+      cache: "no-store",
+      credentials: "include"
+    });
+
     const me = await res.json();
 
     if(!me.loggedIn){
-      // ❌ Not logged in → force login
       window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname);
+      return null;
     }
 
+    return me;
+
   }catch(e){
-    window.location.href = "login.html";
+    window.location.href = "index.html";
+    return null;
   }
 }
 
-// run immediately
-checkAuth();
+
 const { useState, useEffect } = React;
 
 function App(){
@@ -152,19 +159,19 @@ function App(){
     load();
     loadSummary();
 
-    fetch("../backend/api/cheap-suggestions.php")
+    fetch("../backend/api/cheap-suggestions.php" , { credentials: "include" })
       .then(r=>r.json())
       .then(setSuggest);
   },[]);
 
   function load(){
-    fetch("../backend/api/expense-list.php")
+    fetch("../backend/api/expense-list.php" , { credentials: "include" })
       .then(r=>r.json())
       .then(setExpenses);
   }
-
+let chartInstance = null;
   function loadSummary(){
-    fetch("../backend/api/expense-summary.php")
+    fetch("../backend/api/expense-summary.php" , { credentials: "include" })
       .then(r=>r.json())
       .then(data=>{
         setSummary(data);
@@ -178,7 +185,11 @@ function App(){
           const labels = data.categories.map(c=>c.category);
           const values = data.categories.map(c=>Number(c.total));
 
-         new Chart(ctx,{
+   if(chartInstance){
+  chartInstance.destroy();
+}
+
+chartInstance = new Chart(ctx,{
   type:"doughnut",
   data:{
     labels:labels,
@@ -201,7 +212,11 @@ function App(){
     fd.append("category",category);
     fd.append("note",note);
 
-    fetch("../backend/api/expense-add.php",{method:"POST",body:fd})
+    fetch("../backend/api/expense-add.php", {
+  method: "POST",
+  body: fd,
+  credentials: "include"
+})
       .then(r=>r.json())
       .then(res=>{
         if(res.ok){
@@ -250,7 +265,7 @@ function App(){
         "Budget: ₹",
         React.createElement("input",{
           value:budget,
-          onChange:e=>setBudget(e.target.value)
+          onChange:e=>setBudget(Number(e.target.value))
         })
       ),
 
@@ -265,10 +280,12 @@ function App(){
     summary ? React.createElement("div",{className:"card"},
       React.createElement("h3",null,"📊 Category Analysis"),
       summary.categories.map(c =>
-        React.createElement("div",null,
-          c.category+" → ₹"+c.total
-        )
-      )
+  React.createElement("div",{
+    key:c.category
+  },
+    c.category + " → ₹" + c.total
+  )
+)
     ) : null,
 
     React.createElement("div",{className:"card"},
@@ -303,9 +320,9 @@ function App(){
         React.createElement("input",{placeholder:"Amount",value:amount,onChange:e=>setAmount(e.target.value),required:true}),
 
         React.createElement("select",{value:category,onChange:e=>setCategory(e.target.value)},
-          ["food","rent","travel","study","misc"].map(x=>
-            React.createElement("option",{value:x},x)
-          )
+         ["food","rent","travel","study","misc"].map(x =>
+  React.createElement("option",{value:x, key:x},x)
+)
         ),
 
         React.createElement("input",{placeholder:"Note",value:note,onChange:e=>setNote(e.target.value)}),
@@ -316,8 +333,9 @@ function App(){
 
     React.createElement("div",{className:"card"},
       React.createElement("h3",null,"Expenses"),
-      expenses.map(item=>
-        React.createElement("div",{className:"expenseItem"},
+      expenses.map(item =>
+  React.createElement("div",{className:"expenseItem", key: item.id || item.date + item.amount},
+        
           React.createElement("div",null,
             "₹"+item.amount+" - "+item.category,
             React.createElement("div",{style:{fontSize:"12px",opacity:.7}},item.note)
@@ -329,15 +347,18 @@ function App(){
   );
 }
 
-requireLogin().then(me=>{
+checkAuth().then(me=>{
   if(!me) return;
+
   ReactDOM.createRoot(document.getElementById("root"))
     .render(React.createElement(App));
 });
 
 function logout(){
-  fetch("../backend/auth/logout.php")
-    .then(()=>window.location.href="index.html");
+  fetch("../backend/auth/logout.php" ,{ credentials: "include" })
+      .then(()=>window.location.href="index.html");
+      
+
 }
 
 function resetAllData(){
@@ -347,7 +368,8 @@ function resetAllData(){
   if(!confirmReset) return;
 
   fetch("../backend/api/expense-reset.php", {
-    method: "POST"
+    method: "POST",
+    credentials: "include"
   })
   .then(res => res.json())
   .then(data => {

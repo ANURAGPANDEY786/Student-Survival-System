@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Survival System (SSS)</title>
 
   
@@ -313,6 +314,10 @@ body{
   gap:10px;
   cursor:pointer;
 }
+.brand:hover{
+  background:#111827;
+  border-radius:10px;
+}
 
 .brandText{
   line-height:1.1;
@@ -329,8 +334,13 @@ body{
 
 /* optional animation */
 #brandIcon{
+  cursor:pointer;
   font-size:22px;
   transition:0.3s;
+}
+#brandIcon:hover{
+  transform:scale(1.2);
+  color:#22c55e;
 }
 /* ===== HAMBURGER ===== */
 .hamburger{
@@ -368,9 +378,8 @@ body{
 <body>
 
   <!-- 🔥 SIDEBAR -->
-<div id="sidebar" 
-     onmouseenter="openSidebar()" 
-     onmouseleave="closeSidebar()">
+<div id="sidebar" >
+     
   <div class="sideHeader">
     🛟 SSS Menu
     <span onclick="closeSidebar()" style="cursor:pointer;">✖</span>
@@ -414,11 +423,9 @@ body{
   <div class="nav">
     
     <!-- BRAND -->
-    <div class="brand" 
-     onclick="handleMenuClick()" 
-     onmouseenter="openSidebar()" 
-     onmouseleave="autoCloseSidebar()">
-      <span id="brandIcon">🛟</span>
+    <div class="brand"  >
+  
+      <span id="brandIcon" onclick="handleMenuClick()">🛟</span>
 
       <div class="brandText">
         <div class="short">SSS</div>
@@ -888,15 +895,6 @@ function openSidebar(){
   document.getElementById("brandIcon").textContent = "✖";
 }
 
-function autoCloseSidebar(){
-  // small delay so user can move mouse to sidebar
-  setTimeout(()=>{
-    const sidebar = document.getElementById("sidebar");
-    if(!sidebar.matches(':hover')){
-      closeSidebar();
-    }
-  }, 300);
-}
 
 function closeSidebar(){
   document.getElementById("sidebar").classList.remove("active");
@@ -907,22 +905,42 @@ function closeSidebar(){
 }
 function handleMenuClick(){
   const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("overlay");
   const icon = document.getElementById("brandIcon");
 
-  const isOpen = sidebar.classList.contains("active");
-
-  if(isOpen){
-    // 🔒 CLOSE
-    sidebar.classList.remove("active");
-    document.getElementById("overlay").classList.remove("active");
-    icon.textContent = "🛟";   // back to logo
-  } else {
-    // 🔓 OPEN
-    sidebar.classList.add("active");
-    document.getElementById("overlay").classList.add("active");
-    icon.textContent = "✖";   // close icon
+  // 📱 MOBILE → direct open
+  if(window.innerWidth <= 768){
+    sidebar.classList.toggle("active");
+    overlay.classList.toggle("active");
+    icon.textContent = sidebar.classList.contains("active") ? "✖" : "🛟";
+    return;
   }
+
+  // 🖥️ DESKTOP → require hover first
+  if(!hoverActive){
+    return;
+  }
+
+  sidebar.classList.toggle("active");
+  overlay.classList.toggle("active");
+  icon.textContent = sidebar.classList.contains("active") ? "✖" : "🛟";
 }
+let hoverActive = false;
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  const brand = document.querySelector("#brandIcon");
+
+  brand.addEventListener("mouseenter", ()=>{
+    if(window.innerWidth > 768){
+      hoverActive = true;
+    }
+  });
+
+  brand.addEventListener("mouseleave", ()=>{
+    hoverActive = false;
+  });
+});
+
 </script>
 <!-- 🤖 AI CONTAINER -->
 <div id="aiContainer">

@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medical Support</title>
 
 
@@ -71,23 +72,30 @@ body{ background:#0b0b0b; color:#fff; margin:0; font-family:Arial; }
 
 <script>
 
-  async function checkAuth(){
+ async function checkAuth(){
   try{
-    const res = await fetch("../backend/auth/me.php", { cache: "no-store" });
+    const res = await fetch("../backend/auth/me.php", {
+      cache: "no-store",
+      credentials: "include"
+    });
+
     const me = await res.json();
 
     if(!me.loggedIn){
-      // ❌ Not logged in → force login
-      window.location.href = "login.html?next=" + encodeURIComponent(window.location.pathname);
+      window.location.href = "login.html";
+      return null;
     }
 
+    return me;
+
   }catch(e){
-    window.location.href = "login.html";
+    window.location.href = "index.html";
+    return null;
   }
 }
 
 // run immediately
-checkAuth();
+
 
 window.addEventListener("pageshow", function(event) {
   if (event.persisted) {
@@ -116,7 +124,7 @@ function getBestHospital(){
 
 const best = getBestHospital();
 
-  <!-- 🔥 REPLACE ONLY YOUR useEffect PART WITH THIS -->
+  
 
 useEffect(()=>{
 
@@ -153,18 +161,23 @@ useEffect(()=>{
         .bindPopup("📍 You are here").openPopup();
 
       // 🏥 HOSPITALS
-      data.forEach(item => {
+     data.forEach(item => {
 
-        const hLat = Number(item.lat || item.latitude);
-        const hLng = Number(item.lng || item.longitude);
+  let hLat = Number(item.lat || item.latitude);
+  let hLng = Number(item.lng || item.longitude);
 
-        if(!isNaN(hLat) && !isNaN(hLng)){
-          L.marker([hLat, hLng]).addTo(window.myMap)
-            .bindPopup("🏥 " + item.name);
-        } else {
-          console.warn("❌ Skipping invalid hospital:", item);
-        }
+  if(isNaN(hLat) || isNaN(hLng)){
+    console.warn("⚠️ Using fallback location for:", item.name);
+    hLat = lat + (Math.random() * 0.01);
+    hLng = lng + (Math.random() * 0.01);
+  }
 
+  // ✅ ADD THIS
+  L.marker([hLat, hLng]).addTo(window.myMap)
+    .bindPopup("🏥 " + item.name);
+
+
+        
       });
 
     },500);
@@ -174,7 +187,7 @@ useEffect(()=>{
     const lat = 26.8467; // college fallback
     const lng = 80.9462;
 
-    fetch("../backend/api/medical-list.php")
+    fetch("../backend/api/medical-list.php" ,{ credentials: "include" })
       .then(r=>r.json())
       .then(data=>{
         setList(data);
@@ -183,8 +196,11 @@ useEffect(()=>{
   }
 
   // 🥇 PG LOCATION
-  if(pgLat && pgLng && !isNaN(pgLat) && !isNaN(pgLng)){
-    fetch("../backend/api/medical-list.php?lat="+pgLat+"&lng="+pgLng)
+  const latNum = Number(pgLat);
+const lngNum = Number(pgLng);
+
+if(latNum && lngNum && !isNaN(latNum) && !isNaN(lngNum)){
+    fetch("../backend/api/medical-list.php?lat="+pgLat+"&lng="+pgLng ,{ credentials: "include" })
       .then(r=>r.json())
       .then(data=>{
         setList(data);
@@ -207,9 +223,10 @@ useEffect(()=>{
 
       setUserLocation({lat,lng});
 
-      fetch("../backend/api/medical-list.php?lat="+lat+"&lng="+lng)
+      fetch("../backend/api/medical-list.php?lat="+lat+"&lng="+lng ,{ credentials: "include" })
         .then(r=>r.json())
         .then(data=>{
+          
           setList(data);
           loadMap(data, lat, lng);
         });
@@ -275,9 +292,9 @@ React.createElement("div",{className:"card", style:{border:"2px solid #3b82f6"}}
           borderRadius:"10px"
         },
         onClick: ()=>{
-          if(list.length>0){
-            window.location.href="tel:"+list[0].phone;
-          }
+          if(best){
+  window.location.href="tel:"+best.phone;
+}
         }
       },"🚑 Call Nearest Hospital")
     ),
@@ -294,7 +311,7 @@ React.createElement("div",{className:"card", style:{border:"2px solid #3b82f6"}}
 
       React.createElement("div",{
         className:"card",
-        key:item.id,
+        key: item.id || item.name + item.phone,
         style:index===0 ? {border:"2px solid #22c55e"} : {}
       },
 
@@ -348,14 +365,14 @@ React.createElement("div",{style:{marginTop:"6px",fontWeight:"bold"}},
   );
 }
 
-requireLogin().then(me=>{
+checkAuth().then(me=>{
   if(!me) return;
   ReactDOM.createRoot(document.getElementById("root"))
     .render(React.createElement(App));
 });
 
 function logout(){
-  fetch("../backend/auth/logout.php")
+  fetch("../backend/auth/logout.php" ,{ credentials: "include" })
     .then(()=>window.location.href="index.html");
 }
 
